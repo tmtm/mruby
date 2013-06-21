@@ -1,0 +1,11 @@
+config :watch, {
+  :interface => "eth0",
+  :servers => [ "192.168.0.254" ]
+}
+
+config :irc, {
+ :server   => "irc.example.com",
+ :port     => 6667,
+ :nickname => "dhcpalert",
+ :channel  => "#noc"
+}
