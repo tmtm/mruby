@@ -14,6 +14,8 @@ MRuby::Build.new do |conf|
   # include the IIJ gembox
   conf.gembox 'iij'
 
+  conf.gem :git => 'https://github.com/mattn/mruby-updategems.git'
+
   # C compiler settings
   # conf.cc do |cc|
   #   cc.command = ENV['CC'] || 'gcc'
