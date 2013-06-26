@@ -6,7 +6,11 @@ MRuby::Gem::Specification.new('mruby-bin-mirb') do |spec|
   if MRuby::Build.current && MRuby::Build.current.name == "host"
     if %w(/usr/include /usr/local/include /usr/pkg/include).any?{|path| File.exist?(File.join path, 'readline') }
       spec.cc.flags << '-DENABLE_READLINE'
-      spec.linker.libraries << 'readline'
+      if %w(/usr/lib /usr/local/lib /usr/pkg/lib).any?{|path| File.exist?(File.join path, 'libedit.a') }
+        spec.linker.libraries << 'edit'
+      else
+        spec.linker.libraries << 'readline'
+      end
     end
   end
 end
