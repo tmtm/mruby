@@ -39,7 +39,16 @@ MRuby::GemBox.new do |conf|
   conf.gem :core => "mruby-symbol-ext"
 
   # Use Random class
-  #conf.gem :core => "mruby-random"
+  # conf.gem :core => "mruby-random"  # we use "iij/mruby-simple-random"
+
+  # Use extensional Object class
+  conf.gem :core => "mruby-object-ext"
+
+  # Use ObjectSpace class
+  conf.gem :core => "mruby-objectspace"
+
+  # Use Fiber class
+  conf.gem :core => "mruby-fiber"
 
   # Use IIJ modules
   conf.gem :git => 'https://github.com/iij/mruby-digest.git'
@@ -64,7 +73,4 @@ MRuby::GemBox.new do |conf|
 
   # Generate mruby command
   conf.gem :core => "mruby-bin-mruby"
-
-  # update gems
-  conf.gem :git => 'https://github.com/mattn/mruby-updategems.git'
 end
