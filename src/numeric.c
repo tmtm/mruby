@@ -343,21 +343,6 @@ flodivmod(mrb_state *mrb, mrb_float x, mrb_float y, mrb_float *divp, mrb_float *
   if (modp) *modp = mod;
   if (divp) *divp = div;
 }
-  
-static mrb_value
-int_chr(mrb_state *mrb, mrb_value x)
-{
-  mrb_int chr;
-  char c;
-
-  chr = mrb_fixnum(x);
-  if (chr >= (1 << CHAR_BIT)) {
-    mrb_raisef(mrb, E_RANGE_ERROR, "%ld out of char range", chr);
-  }
-  c = (char)chr;
-
-  return mrb_str_new(mrb, &c, 1);
-}
 
 /* 15.2.9.3.5  */
 /*
@@ -1409,7 +1394,6 @@ mrb_init_numeric(mrb_state *mrb)
   mrb_define_method(mrb, fixnum,  "to_s",     fix_to_s,          MRB_ARGS_NONE()); /* 15.2.8.3.25 */
   mrb_define_method(mrb, fixnum,  "inspect",  fix_to_s,          MRB_ARGS_NONE());
   mrb_define_method(mrb, fixnum,  "divmod",   fix_divmod,        MRB_ARGS_REQ(1)); /* 15.2.8.3.30 (x) */
-  mrb_define_method(mrb, fixnum,  "chr",      int_chr,           MRB_ARGS_NONE());
 
   /* Float Class */
   fl = mrb->float_class = mrb_define_class(mrb, "Float", numeric);

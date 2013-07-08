@@ -7,4 +7,5 @@ assert('Integer#chr') do
 
   # multibyte encoding (not support yet)
   assert_raise(RangeError) { 12345.chr }
+  assert_raise(RangeError) { 256.chr }
 end
