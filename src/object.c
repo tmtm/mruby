@@ -91,45 +91,6 @@ nil_inspect(mrb_state *mrb, mrb_value obj)
   return mrb_str_new(mrb, "nil", 3);
 }
 
-/*
- *  call-seq:
- *     nil.to_a    -> []
- *
- *  Always returns an empty array.
- */
-
-static mrb_value
-nil_to_a(mrb_state *mrb, mrb_value obj)
-{
-    return mrb_ary_new(mrb);
-}
-
-/*
- *  call-seq:
- *     nil.to_f    -> 0.0
- *
- *  Always returns zero.
- */
-
-static mrb_value
-nil_to_f(mrb_state *mrb, mrb_value obj)
-{
-    return mrb_float_value(mrb, 0.0);
-}
-
-/*
- *  call-seq:
- *     nil.to_i    -> 0
- *
- *  Always returns zero.
- */
-
-static mrb_value
-nil_to_i(mrb_state *mrb, mrb_value obj)
-{
-    return mrb_fixnum_value(0);
-}
-
 /***********************************************************************
  *  Document-class: TrueClass
  *
@@ -318,9 +279,6 @@ mrb_init_object(mrb_state *mrb)
   mrb_define_method(mrb, n, "|",    false_or,       MRB_ARGS_REQ(1));  /* 15.2.4.3.3  */
   mrb_define_method(mrb, n, "nil?", mrb_true,       MRB_ARGS_NONE());  /* 15.2.4.3.4  */
   mrb_define_method(mrb, n, "to_s", nil_to_s,       MRB_ARGS_NONE());  /* 15.2.4.3.5  */
-  mrb_define_method(mrb, n, "to_a", nil_to_a,       MRB_ARGS_NONE());
-  mrb_define_method(mrb, n, "to_f", nil_to_f,       MRB_ARGS_NONE());
-  mrb_define_method(mrb, n, "to_i", nil_to_i,       MRB_ARGS_NONE());
   mrb_define_method(mrb, n, "inspect", nil_inspect, MRB_ARGS_NONE());
 
   t = mrb->true_class  = mrb_define_class(mrb, "TrueClass",  mrb->object_class);
