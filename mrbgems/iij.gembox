@@ -6,7 +6,7 @@ MRuby::GemBox.new do |conf|
   conf.gem :core => "mruby-print"
 
   # Use standard Math module
-  conf.gem :core => "mruby-math"
+  # conf.gem :core => "mruby-math"  # XXX
 
   # Use standard Time class
   conf.gem :core => "mruby-time"
