@@ -134,6 +134,18 @@ class String
     self.replace([b, value, a].join(''))
   end
 
+  ##
+  # ISO 15.2.10.5.5
+  def =~(re)
+    re =~ self
+  end
+
+  ##
+  # ISO 15.2.10.5.27
+  def match(re, &block)
+    re.match(self, &block)
+  end
+
   def %(args)
     sprintf(self, *args)
   end

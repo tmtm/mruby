@@ -1,4 +1,4 @@
-/*
+ /*
 ** vm.c - virtual machine for mruby
 **
 ** See Copyright Notice in mruby.h
@@ -92,12 +92,12 @@ stack_init(mrb_state *mrb)
 {
   struct mrb_context *c = mrb->c;
 
-  /* assert(mrb->stack == NULL); */
+  /* mrb_assert(mrb->stack == NULL); */
   c->stbase = (mrb_value *)mrb_calloc(mrb, STACK_INIT_SIZE, sizeof(mrb_value));
   c->stend = c->stbase + STACK_INIT_SIZE;
   c->stack = c->stbase;
 
-  /* assert(ci == NULL); */
+  /* mrb_assert(ci == NULL); */
   c->cibase = (mrb_callinfo *)mrb_calloc(mrb, CALLINFO_INIT_SIZE, sizeof(mrb_callinfo));
   c->ciend = c->cibase + CALLINFO_INIT_SIZE;
   c->ci = c->cibase;
@@ -544,7 +544,7 @@ void mrb_gv_val_set(mrb_state *mrb, mrb_sym sym, mrb_value val);
 mrb_value
 mrb_run(mrb_state *mrb, struct RProc *proc, mrb_value self)
 {
-  /* assert(mrb_proc_cfunc_p(proc)) */
+  /* mrb_assert(mrb_proc_cfunc_p(proc)) */
   mrb_irep *irep = proc->body.irep;
   mrb_code *pc = irep->iseq;
   mrb_value *pool = irep->pool;
@@ -1261,7 +1261,7 @@ mrb_run(mrb_state *mrb, struct RProc *proc, mrb_value self)
           mrb->c->stack = mrb->c->stbase + ci[1].stackidx;
           if (ci[1].acc < 0 && prev_jmp) {
             mrb->jmp = prev_jmp;
-            longjmp(*(jmp_buf*)mrb->jmp, 1);
+            mrb_longjmp(mrb);
           }
           while (eidx > ci->eidx) {
             ecall(mrb, --eidx);
@@ -2126,4 +2126,10 @@ mrb_run(mrb_state *mrb, struct RProc *proc, mrb_value self)
     }
   }
   END_DISPATCH;
+}
+
+void
+mrb_longjmp(mrb_state *mrb)
+{
+  longjmp(*(jmp_buf*)mrb->jmp, 1);
 }
