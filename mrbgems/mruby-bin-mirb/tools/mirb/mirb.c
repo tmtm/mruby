@@ -282,6 +282,7 @@ main(int argc, char **argv)
 
   cxt = mrbc_context_new(mrb);
   cxt->capture_errors = 1;
+  mrbc_filename(mrb, cxt, "(mirb)");
   if (args.verbose) cxt->dump_result = 1;
 
   MIRB_BIN= mrb_str_new(mrb, argv[0], strlen(argv[0]));
