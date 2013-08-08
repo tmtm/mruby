@@ -334,8 +334,10 @@ mrb_init_heap(mrb_state *mrb)
   add_heap(mrb);
   mrb->gc_interval_ratio = DEFAULT_GC_INTERVAL_RATIO;
   mrb->gc_step_ratio = DEFAULT_GC_STEP_RATIO;
+#ifndef MRB_GC_TURN_OFF_GENERATIONAL
   mrb->is_generational_gc_mode = TRUE;
   mrb->gc_full = TRUE;
+#endif
 
 #ifdef GC_PROFILE
   program_invoke_time = gettimeofday_time();
@@ -1001,8 +1003,8 @@ mrb_full_gc(mrb_state *mrb)
   GC_INVOKE_TIME_REPORT("mrb_full_gc()");
   GC_TIME_START;
 
-  if (mrb->gc_state == GC_STATE_SWEEP) {
-    /* finish sweep phase */
+  if (mrb->gc_state != GC_STATE_NONE) {
+    /* finish half baked GC cycle */
     incremental_gc_until(mrb, GC_STATE_NONE);
   }
 
