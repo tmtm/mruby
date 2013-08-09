@@ -88,6 +88,9 @@
 
     * Major GC - same as a full regular GC cycle.
 
+  the difference between "tranditional" generational GC is that, the major GC
+  in mruby is triggered incrementally in a tri-color manner.
+
 
   For details, see the comments for each function.
 
@@ -144,9 +147,9 @@ gettimeofday_time(void)
   gc_time = gettimeofday_time() - gc_time;\
   gc_total_time += gc_time;\
   fprintf(stderr, "gc_state: %d\n", mrb->gc_state);\
-  fprintf(stderr, "live: %d\n", mrb->live);\
-  fprintf(stderr, "majorgc_old_threshold: %d\n", mrb->majorgc_old_threshold);\
-  fprintf(stderr, "gc_threshold: %d\n", mrb->gc_threshold);\
+  fprintf(stderr, "live: %zu\n", mrb->live);\
+  fprintf(stderr, "majorgc_old_threshold: %zu\n", mrb->majorgc_old_threshold);\
+  fprintf(stderr, "gc_threshold: %zu\n", mrb->gc_threshold);\
   fprintf(stderr, "gc_time: %30.20f\n", gc_time);\
   fprintf(stderr, "gc_total_time: %30.20f\n\n", gc_total_time);\
 } while(0)
@@ -944,6 +947,7 @@ clear_all_old(mrb_state *mrb)
 
   mrb_assert(is_generational(mrb));
   if (is_major_gc(mrb)) {
+    /* finish the half baked GC */
     incremental_gc_until(mrb, GC_STATE_NONE);
   }
 
@@ -1003,15 +1007,14 @@ mrb_full_gc(mrb_state *mrb)
   GC_INVOKE_TIME_REPORT("mrb_full_gc()");
   GC_TIME_START;
 
-  if (mrb->gc_state != GC_STATE_NONE) {
-    /* finish half baked GC cycle */
-    incremental_gc_until(mrb, GC_STATE_NONE);
-  }
-
-  /* clear all the old objects back to young */
   if (is_generational(mrb)) {
+    /* clear all the old objects back to young */
     clear_all_old(mrb);
     mrb->gc_full = TRUE;
+  }
+  else if (mrb->gc_state != GC_STATE_NONE) {
+    /* finish half baked GC cycle */
+    incremental_gc_until(mrb, GC_STATE_NONE);
   }
 
   incremental_gc_until(mrb, GC_STATE_NONE);
