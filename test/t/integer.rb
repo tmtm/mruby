@@ -208,13 +208,14 @@ end
 # Not ISO specified
 
 assert('Integer#div') do
-  0.div(1) == 0 and
-  1.div(3) == 0 and
-  3.div(1) == 3 and
-  20.div(7) == 2 and
-  -3.div(5) == -1 and
-  25.div(-13) == -2 and
-  -13.div(-7) == 1
+  assert_equal  0, 0.div(1)
+  assert_equal  0, 0.div(1)
+  assert_equal  0, 1.div(3)
+  assert_equal  3, 3.div(1)
+  assert_equal  2, 20.div(7)
+  assert_equal -1, -3.div(5)
+  assert_equal -2, 25.div(-13)
+  assert_equal  1, -13.div(-7)
 end
 
 assert('Integer#step') do
