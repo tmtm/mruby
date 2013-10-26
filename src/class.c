@@ -576,16 +576,8 @@ mrb_get_args(mrb_state *mrb, const char *format, ...)
                 *p = (mrb_int)f;
               }
               break;
-            case MRB_TT_FALSE:
-              *p = 0;
-              break;
             default:
-              {
-                mrb_value tmp;
-
-                tmp = mrb_convert_type(mrb, *sp, MRB_TT_FIXNUM, "Integer", "to_int");
-                *p = mrb_fixnum(tmp);
-              }
+              *p = mrb_fixnum(mrb_Integer(mrb, *sp));
               break;
           }
           sp++;
