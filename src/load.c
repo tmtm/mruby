@@ -102,7 +102,21 @@ read_irep_record_1(mrb_state *mrb, const uint8_t *bin, uint32_t *len)
       irep->pool[i].type = tt;
       switch (tt) { //pool data
       case MRB_TT_FIXNUM:
-        irep->pool[i].value.i = mrb_fixnum(mrb_str_to_inum(mrb, s, 10, FALSE));
+        {
+          mrb_value v = mrb_str_to_inum(mrb, s, 10, FALSE);
+
+          switch (mrb_type(v)) {
+          case MRB_TT_FIXNUM:
+            irep->pool[i].value.i = mrb_fixnum(v);
+            break;
+          case MRB_TT_FLOAT:
+            irep->pool[i].type = MRB_TT_FLOAT;
+            irep->pool[i].value.f = mrb_float(v);
+          default:
+             /* broken data; should not happen */
+            irep->pool[i].value.i = 0;
+          }
+        }
         break;
 
       case MRB_TT_FLOAT:
@@ -482,7 +496,8 @@ read_lineno_record_file(mrb_state *mrb, FILE *fp, mrb_irep *irep, uint8_t *buf)
 {
   const size_t record_header_size = 4;
   int result;
-  size_t i, len, buf_size;
+  size_t i, buf_size;
+  uint32_t len;
   void *ptr;
 
   if (fread(buf, record_header_size, 1, fp) == 0) {
@@ -547,7 +562,8 @@ static mrb_irep*
 read_irep_record_file(mrb_state *mrb, FILE *fp, uint8_t *buf)
 {
   const size_t record_header_size = 1 + 4;
-  size_t buf_size, len, i;
+  size_t buf_size, i;
+  uint32_t len;
   mrb_irep *irep = NULL;
   void *ptr;
 
