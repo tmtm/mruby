@@ -569,7 +569,7 @@ write_filename_table(mrb_state *mrb, mrb_irep *irep, uint8_t **cp, mrb_sym **fp,
 
     // register filename
     *lp += 1;
-    *fp = filenames = (mrb_sym*)mrb_realloc(mrb, filenames, sizeof(mrb_sym*) * (*lp));
+    *fp = filenames = (mrb_sym*)mrb_realloc(mrb, filenames, sizeof(mrb_sym) * (*lp));
     filenames[*lp - 1] = file->filename_sym;
 
     // filename
@@ -612,16 +612,22 @@ write_section_debug(mrb_state *mrb, mrb_irep *irep, uint8_t *cur)
   for (i=0; i<irep->rlen; i++) {
     section_size += write_filename_table(mrb, irep->reps[i], &cur, &filenames, &filenames_len);
   }
-  mrb_free(mrb, filenames);
   uint16_to_bin(filenames_len, filenames_len_out);
 
   // debug records
   dlen = write_debug_record(mrb, irep, cur, filenames, filenames_len);
   cur += dlen;
   section_size += dlen;
+  for (i=0; i<irep->rlen; i++) {
+    dlen = write_debug_record(mrb, irep->reps[i], cur, filenames, filenames_len);
+    cur += dlen;
+    section_size += dlen;
+  }
 
   memcpy(header->section_identify, RITE_SECTION_DEBUG_IDENTIFIER, sizeof(header->section_identify));
   uint32_to_bin(section_size, header->section_size);
+
+  mrb_free(mrb, filenames);
 
   return MRB_DUMP_OK;
 }
