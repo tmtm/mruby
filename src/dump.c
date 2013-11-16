@@ -502,7 +502,7 @@ write_debug_record(mrb_state *mrb, mrb_irep *irep, uint8_t *bin, mrb_sym const* 
 {
   uint8_t *cur;
   uint32_t f_idx;
-  int i;
+  size_t ret;
 
   cur = bin + sizeof(uint32_t); // skip record size
   cur += uint16_to_bin(irep->debug_info->flen, cur); // file count
@@ -542,15 +542,13 @@ write_debug_record(mrb_state *mrb, mrb_irep *irep, uint8_t *bin, mrb_sym const* 
       default: mrb_assert(0); break;
     }
   }
-  uint32_to_bin(cur - bin, bin);
 
-  for (i=0; i<irep->rlen; i++) {
-    cur += write_debug_record(mrb, irep->reps[i], cur, filenames, filenames_len);
-  }
+  ret = cur - bin;
+  uint32_to_bin(ret, bin);
 
   mrb_assert((cur - bin) == (int)get_debug_record_size(mrb, irep));
 
-  return cur - bin;
+  return ret;
 }
 
 static int
