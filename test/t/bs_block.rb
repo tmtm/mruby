@@ -487,3 +487,24 @@ assert("BS Block 35") do
   end
   assert_equal :ok, TestReturnFromNestedBlock_BSBlock35.test
 end
+
+assert("Issue #1579") do
+  # https://github.com/mruby/mruby/issues/1579
+
+  class Issue1579
+    def self.test
+      @a = nil
+      begin
+        raise 'a'
+      ensure
+        @a = self
+      end
+    end
+
+    def self.a
+      @a
+    end
+  end
+  Issue1579.test rescue nil
+  assert_equal Issue1579, Issue1579.a
+end
