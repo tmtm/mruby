@@ -2551,5 +2551,5 @@ mrb_init_string(mrb_state *mrb)
   mrb_define_method(mrb, s, "inspect",         mrb_str_inspect,         MRB_ARGS_NONE()); /* 15.2.10.5.46(x) */
   mrb_define_method(mrb, s, "bytes",           mrb_str_bytes,           MRB_ARGS_NONE());
 
-  mrb_gv_set(mrb, mrb_intern(mrb, "$;"), mrb_nil_value());
+  mrb_gv_set(mrb, mrb_intern_lit(mrb, "$;"), mrb_nil_value());
 }

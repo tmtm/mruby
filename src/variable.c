@@ -973,7 +973,7 @@ mrb_gv_alias_name_check(mrb_state *mrb, mrb_sym sym)
     if (str != NULL) {
       if (len == (str - *ptr) && strncmp(RSTRING_PTR(sym0), *ptr, len) == 0) {
         str++;
-        sym = mrb_intern(mrb, str);
+        sym = mrb_intern_cstr(mrb, str);
         break;
       }
     }
