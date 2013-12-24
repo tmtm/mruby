@@ -45,7 +45,7 @@ mrb_intern(mrb_state *mrb, const char *name, size_t len)
 
   sname.len = len;
   sname.name = name;
-  k = kh_get(n2s, h, sname);
+  k = kh_get(n2s, mrb, h, sname);
   if (k != kh_end(h))
     return kh_value(h, k);
 
@@ -54,7 +54,7 @@ mrb_intern(mrb_state *mrb, const char *name, size_t len)
   memcpy(p, name, len);
   p[len] = 0;
   sname.name = (const char*)p;
-  k = kh_put(n2s, h, sname);
+  k = kh_put(n2s, mrb, h, sname);
   kh_value(h, k) = sym;
 
   return sym;
@@ -82,7 +82,7 @@ mrb_check_intern(mrb_state *mrb, const char *name, size_t len)
   sname.len = len;
   sname.name = name;
 
-  k = kh_get(n2s, h, sname);
+  k = kh_get(n2s, mrb, h, sname);
   if (k != kh_end(h)) {
     return mrb_symbol_value(kh_value(h, k));
   }
@@ -130,7 +130,7 @@ mrb_free_symtbl(mrb_state *mrb)
 
   for (k = kh_begin(h); k != kh_end(h); k++)
     if (kh_exist(h, k)) mrb_free(mrb, (char*)kh_key(h, k).name);
-  kh_destroy(n2s,mrb->name2sym);
+  kh_destroy(n2s, mrb, mrb->name2sym);
 }
 
 void
@@ -381,14 +381,9 @@ mrb_sym2str(mrb_state *mrb, mrb_sym sym)
 {
   size_t len;
   const char *name = mrb_sym2name_len(mrb, sym, &len);
-  mrb_value str;
 
   if (!name) return mrb_undef_value(); /* can't happen */
-  str = mrb_str_new_static(mrb, name, len);
-  if (symname_p(name) && strlen(name) == len) {
-    return str;
-  }
-  return mrb_str_dump(mrb, str);
+  return mrb_str_new_static(mrb, name, len);
 }
 
 const char*
