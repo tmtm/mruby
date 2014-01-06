@@ -5,12 +5,7 @@
 */
 
 #include <ctype.h>
-#ifndef SIZE_MAX
- /* Some versions of VC++
-  * has SIZE_MAX in stdint.h
-  */
-# include <limits.h>
-#endif
+#include <limits.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1249,7 +1244,7 @@ mrb_str_include(mrb_state *mrb, mrb_value self)
   mrb_bool include_p;
 
   mrb_get_args(mrb, "o", &str2);
-  if (mrb_type(str2) == MRB_TT_FIXNUM) {
+  if (mrb_fixnum_p(str2)) {
     include_p = (memchr(RSTRING_PTR(self), mrb_fixnum(str2), RSTRING_LEN(self)) != NULL);
   }
   else {

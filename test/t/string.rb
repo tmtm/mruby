@@ -528,12 +528,6 @@ assert('String#each_byte') do
   assert_equal bytes1, bytes2
 end
 
-assert('String#%') do
-  "%05d" % 123 == "00123" and
-    "%-5s: %08x" % [ "ID", 123 ] == "ID   : 0000007b" and
-    "foo = %{foo}" % { :foo => 'bar' } == "foo = bar"
-end
-
 assert('String#dump') do
   ("\1" * 100).dump     # should not raise an exception - regress #1210
 end

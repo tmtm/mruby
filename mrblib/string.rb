@@ -149,10 +149,6 @@ class String
     re.match(self, &block)
   end
 
-  def %(args)
-    sprintf(self, *args)
-  end
-
   def slice!(arg1, arg2 = 1)
     return nil if arg2 < 0
     if arg1.class == Fixnum

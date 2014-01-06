@@ -134,3 +134,9 @@ assert('String#rpartition') do
   assert_equal ["", "b", "aaaa"], "baaaa".rpartition("b")
   assert_equal ["", "", ""],      "".rpartition("a")
 end
+
+assert('String#%') do
+  assert_equal "00123", ("%05d" % 123)
+  assert_equal "ID   : 0000007b",  ("%-5s: %08x" % [ "ID", 123 ])
+  assert_equal "foo = bar", ("foo = %{foo}" % { :foo => 'bar' })
+end
