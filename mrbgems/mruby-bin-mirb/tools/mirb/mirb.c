@@ -8,18 +8,16 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-#include <mruby.h>
+#include "mruby.h"
 #include "mruby/array.h"
-#include <mruby/proc.h>
-#include <mruby/data.h>
-#include <mruby/compile.h>
+#include "mruby/proc.h"
+#include "mruby/compile.h"
+#include "mruby/string.h"
+
 #ifdef ENABLE_READLINE
 #include <limits.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-#endif
-#include <mruby/string.h>
 
 #ifdef ENABLE_REQUIRE
 #include "mruby/array.h"
