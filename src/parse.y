@@ -62,6 +62,8 @@ typedef unsigned int stack_type;
 #define CMDARG_LEXPOP() BITSTACK_LEXPOP(p->cmdarg_stack)
 #define CMDARG_P()      BITSTACK_SET_P(p->cmdarg_stack)
 
+#define SET_LINENO(c,n) ((c)->lineno = (n))
+
 #define sym(x) ((mrb_sym)(intptr_t)(x))
 #define nsym(x) ((node*)(intptr_t)(x))
 
@@ -2150,7 +2152,11 @@ primary		: literal
 		    {
 		      $$ = new_for(p, $2, $5, $8);
 		    }
-		| keyword_class cpath superclass
+		| keyword_class
+		    {
+		      $<num>$ = p->lineno;
+		    }
+		  cpath superclass
 		    {
 		      if (p->in_def || p->in_single)
 			yyerror(p, "class definition in method body");
@@ -2159,10 +2165,15 @@ primary		: literal
 		  bodystmt
 		  keyword_end
 		    {
-		      $$ = new_class(p, $2, $3, $5);
-		      local_resume(p, $<nd>4);
+		      $$ = new_class(p, $3, $4, $6);
+		      SET_LINENO($$, $<num>2);
+		      local_resume(p, $<nd>5);
 		    }
-		| keyword_class tLSHFT expr
+		| keyword_class
+		    {
+		      $<num>$ = p->lineno;
+		    }
+		  tLSHFT expr
 		    {
 		      $<num>$ = p->in_def;
 		      p->in_def = 0;
@@ -2175,12 +2186,17 @@ primary		: literal
 		  bodystmt
 		  keyword_end
 		    {
-		      $$ = new_sclass(p, $3, $7);
-		      local_resume(p, $<nd>6->car);
-		      p->in_def = $<num>4;
-		      p->in_single = (int)(intptr_t)$<nd>6->cdr;
+		      $$ = new_sclass(p, $4, $8);
+		      SET_LINENO($$, $<num>2);
+		      local_resume(p, $<nd>7->car);
+		      p->in_def = $<num>5;
+		      p->in_single = (int)(intptr_t)$<nd>7->cdr;
 		    }
-		| keyword_module cpath
+		| keyword_module
+		    {
+		      $<num>$ = p->lineno;
+		    }
+		  cpath
 		    {
 		      if (p->in_def || p->in_single)
 			yyerror(p, "module definition in method body");
@@ -2189,8 +2205,9 @@ primary		: literal
 		  bodystmt
 		  keyword_end
 		    {
-		      $$ = new_module(p, $2, $4);
-		      local_resume(p, $<nd>3);
+		      $$ = new_module(p, $3, $5);
+		      SET_LINENO($$, $<num>2);
+		      local_resume(p, $<nd>4);
 		    }
 		| keyword_def fname
 		    {
@@ -2543,21 +2560,25 @@ method_call	: operation paren_args
 brace_block	: '{'
 		    {
 		      local_nest(p);
+		      $<num>$ = p->lineno;
 		    }
 		  opt_block_param
 		  compstmt '}'
 		    {
 		      $$ = new_block(p,$3,$4);
+		      SET_LINENO($$, $<num>2);
 		      local_unnest(p);
 		    }
 		| keyword_do
 		    {
 		      local_nest(p);
+		      $<num>$ = p->lineno;
 		    }
 		  opt_block_param
 		  compstmt keyword_end
 		    {
 		      $$ = new_block(p,$3,$4);
+		      SET_LINENO($$, $<num>2);
 		      local_unnest(p);
 		    }
 		;
