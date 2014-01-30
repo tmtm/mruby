@@ -18,6 +18,7 @@
 #include <limits.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#endif
 
 #ifdef ENABLE_REQUIRE
 #include "mruby/array.h"
