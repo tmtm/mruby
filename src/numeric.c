@@ -118,14 +118,14 @@ mrb_flo_to_str(mrb_state *mrb, mrb_value flo, int max_digit)
   n = mrb_float(flo);
 
   if (isnan(n)) {
-    result = mrb_str_new(mrb, "NaN", 3);
+    result = mrb_str_new_lit(mrb, "NaN");
   }
   else if (isinf(n)) {
     if (n < 0) {
-      result = mrb_str_new(mrb, "-inf", 4);
+      result = mrb_str_new_lit(mrb, "-inf");
     }
     else {
-      result = mrb_str_new(mrb, "inf", 3);
+      result = mrb_str_new_lit(mrb, "inf");
     }
   }
   else {
@@ -663,7 +663,7 @@ mrb_fixnum_mul(mrb_state *mrb, mrb_value x, mrb_value y)
     if (a != 0 && c/a != b) {
       return mrb_float_value(mrb, (mrb_float)a*(mrb_float)b);
     }
-    return mrb_fixnum_value(c);;
+    return mrb_fixnum_value(c);
   }
   return mrb_float_value(mrb, (mrb_float)a * mrb_to_flo(mrb, y));
 }
