@@ -53,7 +53,7 @@ typedef void* (*mrb_allocf) (struct mrb_state *mrb, void*, size_t, void *ud);
 typedef struct {
   mrb_sym mid;
   struct RProc *proc;
-  int stackidx;
+  mrb_value *stackent;
   int nregs;
   int argc;
   mrb_code *pc;                 /* return address */
@@ -186,6 +186,8 @@ struct RClass * mrb_module_new(mrb_state *mrb);
 mrb_bool mrb_class_defined(mrb_state *mrb, const char *name);
 struct RClass * mrb_class_get(mrb_state *mrb, const char *name);
 struct RClass * mrb_class_get_under(mrb_state *mrb, struct RClass *outer, const char *name);
+struct RClass * mrb_module_get(mrb_state *mrb, const char *name);
+struct RClass * mrb_module_get_under(mrb_state *mrb, struct RClass *outer, const char *name);
 
 mrb_value mrb_obj_dup(mrb_state *mrb, mrb_value obj);
 mrb_value mrb_check_to_integer(mrb_state *mrb, mrb_value val, const char *method);
