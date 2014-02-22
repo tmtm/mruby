@@ -143,11 +143,36 @@ mrb_flo_to_str(mrb_state *mrb, mrb_value flo)
     }
 
     exp = (n > 1) ? floor(log10(n)) : -ceil(-log10(n));
+    
+    /* preserve significands */
+    int length = 0;
+    if (exp < 0) {
+      int i, beg = -1, end = 0;
+      double f = n;
+      double fd = 0;
+      for (i = 0; i < FLO_MAX_DIGITS; ++i) {
+        f = (f - fd) * 10.0;
+        fd = floor(f + FLO_EPSILON);
+        if (fd != 0) {
+          if (beg < 0) beg = i;
+          end = i + 1;
+        }
+      }
+      if (beg >= 0) length = end - beg;
+    }
 
-    if ((exp < 0 ? -exp : exp) >= FLO_MAX_DIGITS) {
+    if (abs(exp) + length >= FLO_MAX_DIGITS) {
       /* exponent representation */
       e = TRUE;
       n = n / pow(10.0, exp);
+      if (isinf(n)) {
+        if (s[0] == '-') {
+          return mrb_str_new_lit(mrb, "-0.0");
+        }
+        else {
+          return mrb_str_new_lit(mrb, "0.0");
+        }
+      }
     }
     else {
       /* un-exponent (normal) representation */
