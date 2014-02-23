@@ -227,6 +227,7 @@ print_hint(void)
   printf("mirb - Embeddable Interactive Ruby Shell\n\n");
 }
 
+#ifndef ENABLE_READLINE
 /* Print the command line prompt of the REPL */
 static void
 print_cmdline(int code_block_open)
@@ -238,6 +239,7 @@ print_cmdline(int code_block_open)
     printf("> ");
   }
 }
+#endif 
 
 void mrb_codedump_all(mrb_state*, struct RProc*);
 
