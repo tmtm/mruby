@@ -442,7 +442,7 @@ static mrb_value
 inspect_struct(mrb_state *mrb, mrb_value s, int recur)
 {
   const char *cn = mrb_class_name(mrb, mrb_obj_class(mrb, s));
-  mrb_value members, str = mrb_str_new(mrb, "#<struct ", 9);
+  mrb_value members, str = mrb_str_new_lit(mrb, "#<struct ");
   mrb_value *ptr, *ptr_members;
   mrb_int i, len;
 
@@ -450,7 +450,7 @@ inspect_struct(mrb_state *mrb, mrb_value s, int recur)
     mrb_str_append(mrb, str, mrb_str_new_cstr(mrb, cn));
   }
   if (recur) {
-    return mrb_str_cat_cstr(mrb, str, ":...>");
+    return mrb_str_cat_lit(mrb, str, ":...>");
   }
 
   members = mrb_struct_members(mrb, s);
@@ -462,10 +462,10 @@ inspect_struct(mrb_state *mrb, mrb_value s, int recur)
     mrb_sym id;
 
     if (i > 0) {
-      mrb_str_cat_cstr(mrb, str, ", ");
+      mrb_str_cat_lit(mrb, str, ", ");
     }
     else if (cn) {
-      mrb_str_cat_cstr(mrb, str, " ");
+      mrb_str_cat_lit(mrb, str, " ");
     }
     slot = ptr_members[i];
     id = mrb_symbol(slot);
@@ -479,10 +479,10 @@ inspect_struct(mrb_state *mrb, mrb_value s, int recur)
     else {
       mrb_str_append(mrb, str, mrb_inspect(mrb, slot));
     }
-    mrb_str_cat_cstr(mrb, str, "=");
+    mrb_str_cat_lit(mrb, str, "=");
     mrb_str_append(mrb, str, mrb_inspect(mrb, ptr[i]));
   }
-  mrb_str_cat_cstr(mrb, str, ">");
+  mrb_str_cat_lit(mrb, str, ">");
 
   return str;
 }

@@ -309,6 +309,7 @@ init_copy(mrb_state *mrb, mrb_value dest, mrb_value obj)
       case MRB_TT_CLASS:
       case MRB_TT_MODULE:
         copy_class(mrb, dest, obj);
+        /* fall through */
       case MRB_TT_OBJECT:
       case MRB_TT_SCLASS:
       case MRB_TT_HASH:
@@ -584,7 +585,7 @@ get_valid_iv_sym(mrb_state *mrb, mrb_value iv_name)
   mrb_assert(mrb_symbol_p(iv_name) || mrb_string_p(iv_name));
 
   if (mrb_string_p(iv_name)) {
-    iv_name_id = mrb_intern_cstr(mrb, RSTRING_PTR(iv_name));
+    iv_name_id = mrb_intern(mrb, RSTRING_PTR(iv_name), RSTRING_LEN(iv_name));
     valid_iv_name(mrb, iv_name_id, RSTRING_PTR(iv_name), RSTRING_LEN(iv_name));
   }
   else {
