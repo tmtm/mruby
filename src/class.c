@@ -731,8 +731,13 @@ boot_defclass(mrb_state *mrb, struct RClass *super)
   struct RClass *c;
 
   c = (struct RClass*)mrb_obj_alloc(mrb, MRB_TT_CLASS, mrb->class_class);
-  c->super = super ? super : mrb->object_class;
-  mrb_field_write_barrier(mrb, (struct RBasic*)c, (struct RBasic*)super);
+  if (super) {
+    c->super = super;
+    mrb_field_write_barrier(mrb, (struct RBasic*)c, (struct RBasic*)super);
+  }
+  else {
+    c->super = mrb->object_class;
+  }
   c->mt = kh_init(mt, mrb);
   return c;
 }
@@ -1291,7 +1296,7 @@ mrb_class_name(mrb_state *mrb, struct RClass* c)
   if (mrb_nil_p(path)) {
     path = mrb_str_new_lit(mrb, "#<Class:");
     mrb_str_concat(mrb, path, mrb_ptr_to_str(mrb, c));
-    mrb_str_cat(mrb, path, ">", 1);
+    mrb_str_cat_lit(mrb, path, ">");
   }
   return mrb_str_ptr(path)->ptr;
 }
@@ -1426,7 +1431,7 @@ mrb_mod_to_s(mrb_state *mrb, mrb_value klass)
         mrb_str_append(mrb, str, mrb_any_to_s(mrb, v));
         break;
     }
-    mrb_str_cat(mrb, str, ">", 1);
+    mrb_str_cat_lit(mrb, str, ">");
   }
   else {
     struct RClass *c;
@@ -1439,20 +1444,20 @@ mrb_mod_to_s(mrb_state *mrb, mrb_value klass)
     if (mrb_nil_p(path)) {
       switch (mrb_type(klass)) {
         case MRB_TT_CLASS:
-          mrb_str_cat(mrb, str, "#<Class:", 8);
+          mrb_str_cat_lit(mrb, str, "#<Class:");
           break;
 
         case MRB_TT_MODULE:
-          mrb_str_cat(mrb, str, "#<Module:", 9);
+          mrb_str_cat_lit(mrb, str, "#<Module:");
           break;
 
         default:
           /* Shouldn't be happened? */
-          mrb_str_cat(mrb, str, "#<??????:", 9);
+          mrb_str_cat_lit(mrb, str, "#<??????:");
           break;
       }
       mrb_str_concat(mrb, str, mrb_ptr_to_str(mrb, c));
-      mrb_str_cat(mrb, str, ">", 1);
+      mrb_str_cat_lit(mrb, str, ">");
     }
     else {
       str = path;

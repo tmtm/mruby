@@ -217,6 +217,9 @@ mrb_value
 mrb_str_new(mrb_state *mrb, const char *p, size_t len)
 {
   struct RString *s;
+  if ((mrb_int)len < 0) {
+    mrb_raise(mrb, E_ARGUMENT_ERROR, "negative string size (or size too big)");
+  }
 
   s = str_new(mrb, p, len);
   return mrb_obj_value(s);
@@ -2362,7 +2365,7 @@ mrb_str_dump(mrb_state *mrb, mrb_value str)
         }
     }
   }
-  *q++ = '"';
+  *q = '"';
   return mrb_obj_value(result);
 }
 
