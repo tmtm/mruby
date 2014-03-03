@@ -30,6 +30,8 @@ module MRuby
       load gemrake
       return nil unless Gem.current
 
+      enable_cxx_abi if Gem.current.cxx_abi_enabled?
+
       Gem.current.dir = gemdir
       Gem.current.build = MRuby::Build.current
       Gem.current.build_config_initializer = block
@@ -41,7 +43,11 @@ module MRuby
       if params[:github]
         params[:git] = "https://github.com/#{params[:github]}.git"
       elsif params[:bitbucket]
-        params[:git] = "https://bitbucket.org/#{params[:bitbucket]}.git"
+        if params[:method] == "ssh"
+          params[:git] = "git@bitbucket.org:#{params[:bitbucket]}.git"
+        else
+          params[:git] = "https://bitbucket.org/#{params[:bitbucket]}.git"
+        end
       end
 
       if params[:core]
