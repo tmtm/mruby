@@ -26,6 +26,10 @@ typedef struct mrb_shared_string {
   mrb_int len;
 } mrb_shared_string;
 
+#define STR_SHARED_P(s) ((s)->flags & MRB_STR_SHARED)
+#define STR_SET_SHARED_FLAG(s) ((s)->flags |= MRB_STR_SHARED)
+#define STR_UNSET_SHARED_FLAG(s) ((s)->flags &= ~MRB_STR_SHARED)
+
 static mrb_value str_replace(mrb_state *mrb, struct RString *s1, struct RString *s2);
 static mrb_value mrb_str_subseq(mrb_state *mrb, mrb_value str, mrb_int beg, mrb_int len);
 
@@ -49,7 +53,7 @@ str_decref(mrb_state *mrb, mrb_shared_string *shared)
 void
 mrb_str_modify(mrb_state *mrb, struct RString *s)
 {
-  if (s->flags & MRB_STR_SHARED) {
+  if (STR_SHARED_P(s)) {
     mrb_shared_string *shared = s->aux.shared;
 
     if (shared->refcnt == 1 && s->ptr == shared->ptr) {
@@ -73,7 +77,7 @@ mrb_str_modify(mrb_state *mrb, struct RString *s)
       s->aux.capa = len;
       str_decref(mrb, shared);
     }
-    s->flags &= ~MRB_STR_SHARED;
+    STR_UNSET_SHARED_FLAG(s);
     return;
   }
   if (s->flags & MRB_STR_NOFREE) {
@@ -272,7 +276,7 @@ mrb_str_new_static(mrb_state *mrb, const char *p, size_t len)
 void
 mrb_gc_free_str(mrb_state *mrb, struct RString *str)
 {
-  if (str->flags & MRB_STR_SHARED)
+  if (STR_SHARED_P(str))
     str_decref(mrb, str->aux.shared);
   else if ((str->flags & MRB_STR_NOFREE) == 0)
     mrb_free(mrb, str->ptr);
@@ -297,7 +301,7 @@ mrb_str_to_cstr(mrb_state *mrb, mrb_value str0)
 static void
 str_make_shared(mrb_state *mrb, struct RString *s)
 {
-  if (!(s->flags & MRB_STR_SHARED)) {
+  if (!STR_SHARED_P(s)) {
     mrb_shared_string *shared = (mrb_shared_string *)mrb_malloc(mrb, sizeof(mrb_shared_string));
 
     shared->refcnt = 1;
@@ -317,7 +321,7 @@ str_make_shared(mrb_state *mrb, struct RString *s)
     }
     shared->len = s->len;
     s->aux.shared = shared;
-    s->flags |= MRB_STR_SHARED;
+    STR_SET_SHARED_FLAG(s);
   }
 }
 
@@ -1149,7 +1153,7 @@ mrb_str_subseq(mrb_state *mrb, mrb_value str, mrb_int beg, mrb_int len)
   s->ptr = orig->ptr + beg;
   s->len = len;
   s->aux.shared = shared;
-  s->flags |= MRB_STR_SHARED;
+  STR_SET_SHARED_FLAG(s);
   shared->refcnt++;
 
   return mrb_obj_value(s);
@@ -1338,9 +1342,9 @@ mrb_str_index_m(mrb_state *mrb, mrb_value str)
 static mrb_value
 str_replace(mrb_state *mrb, struct RString *s1, struct RString *s2)
 {
-  if (s2->flags & MRB_STR_SHARED) {
+  if (STR_SHARED_P(s2)) {
   L_SHARE:
-    if (s1->flags & MRB_STR_SHARED){
+    if (STR_SHARED_P(s1)) {
       str_decref(mrb, s1->aux.shared);
     }
     else {
@@ -1349,7 +1353,7 @@ str_replace(mrb_state *mrb, struct RString *s1, struct RString *s2)
     s1->ptr = s2->ptr;
     s1->len = s2->len;
     s1->aux.shared = s2->aux.shared;
-    s1->flags |= MRB_STR_SHARED;
+    STR_SET_SHARED_FLAG(s1);
     s1->aux.shared->refcnt++;
   }
   else if (s2->len > STR_REPLACE_SHARED_MIN) {
@@ -1357,9 +1361,9 @@ str_replace(mrb_state *mrb, struct RString *s1, struct RString *s2)
     goto L_SHARE;
   }
   else {
-    if (s1->flags & MRB_STR_SHARED) {
+    if (STR_SHARED_P(s1)) {
       str_decref(mrb, s1->aux.shared);
-      s1->flags &= ~MRB_STR_SHARED;
+      STR_UNSET_SHARED_FLAG(s1);
       s1->ptr = (char *)mrb_malloc(mrb, s2->len+1);
     }
     else {
