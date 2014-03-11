@@ -207,15 +207,14 @@ end
 
 # Not ISO specified
 
-assert('Integer#div') do
-  assert_equal  0, 0.div(1)
-  assert_equal  0, 0.div(1)
-  assert_equal  0, 1.div(3)
-  assert_equal  3, 3.div(1)
-  assert_equal  2, 20.div(7)
-  assert_equal -1, -3.div(5)
-  assert_equal -2, 25.div(-13)
-  assert_equal  1, -13.div(-7)
+assert('Integer#divmod') do
+  assert_equal [ 0,  0],   0.divmod(1)
+  assert_equal [ 0,  1],   1.divmod(3)
+  assert_equal [ 3,  0],   3.divmod(1)
+  assert_equal [ 2,  6],  20.divmod(7)
+  assert_equal [-1,  2],  -3.divmod(5)
+  assert_equal [-2, -1],  25.divmod(-13)
+  assert_equal [ 1, -6], -13.divmod(-7)
 end
 
 assert('Integer#step') do

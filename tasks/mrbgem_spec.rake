@@ -43,6 +43,10 @@ module MRuby
         MRuby::Gem.current = self
       end
 
+      def run_test_in_other_mrb_state?
+        not test_preload.nil? or not test_objs.empty?
+      end
+
       def cxx_abi_enabled?
         @cxx_abi_enabled
       end
@@ -51,7 +55,7 @@ module MRuby
         MRuby::Gem.current = self
         @build.compilers.each do |compiler|
           compiler.include_paths << "#{dir}/include"
-        end
+        end if Dir.exist? "#{dir}/include"
         MRuby::Build::COMMANDS.each do |command|
           instance_variable_set("@#{command}", @build.send(command).clone)
         end

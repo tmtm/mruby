@@ -165,7 +165,4 @@ class Float
     }
     n.to_i
   end
-
-  def divmod(other)
-  end
 end
