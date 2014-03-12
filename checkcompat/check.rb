@@ -14,9 +14,10 @@ $workdir = File.expand_path(File.dirname($0))
 $opts = {}
 
 class Mruby
-  def initialize name, url
+  def initialize name, url, branch=nil
     @name    = name
     @url     = url
+    @branch  = branch
 
     @dir = File.join($workdir, @name)
     @upadted = false
@@ -35,7 +36,8 @@ class Mruby
       Dir.chdir @dir
       system "git pull"
     else
-      system "git clone #{@url} #{@dir}"
+      branch = @branch ? "--branch "+@branch : ""
+      system "git clone #{branch} #{@url} #{@dir}"
     end
     @updated = true
   end
@@ -173,8 +175,9 @@ end
 
 base = []
 base << Mruby.new("mruby",  'git@github.com:mruby/mruby.git')
-base << Mruby.new("stable", 'git@github.com:mruby-Forum/mruby.git')
+base << Mruby.new("forum",  'git@github.com:mruby-Forum/mruby.git')
 base << Mruby.new("iij",    'git@github.com:iij/mruby.git')
+base << Mruby.new("stable", 'git@github.com:iij/mruby.git', 'stable_1_0')
 
 mrbgems = []
 mrbgems << Mrbgem.new("mruby-digest", 'git@github.com:iij/mruby-digest.git')
