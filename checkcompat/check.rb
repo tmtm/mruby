@@ -60,7 +60,7 @@ class Mrbgem
   end
 
   def self.local name, dir, *deps
-    g = self.new name, "", *deps
+    g = self.new name, nil, *deps
     g.set_dir File.join($pwd, dir)
     g
   end
@@ -75,6 +75,7 @@ class Mrbgem
 
   def update
     return if @updated
+    return if @url.nil?
     if Dir.exists? @dir
       Dir.chdir @dir do
         system "git pull"
