@@ -167,7 +167,7 @@ opt.on('-g GEM', '--gem GEM') { |v| $opts[:gem] = v }
 opt.on('-u', '--update') { |v| $opts[:update] = true }
 opt.parse! ARGV
 
-unless $opts[:all] or $opts[:gem] or ARGV.size > 0
+unless $opts[:all] or $opts[:base] or $opts[:gem] or ARGV.size > 0
   puts opt.help
   exit
 end
