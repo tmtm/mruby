@@ -34,6 +34,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <stddef.h>
+#include <limits.h>
 
 #include "mrbconf.h"
 #include "mruby/value.h"
@@ -69,7 +70,7 @@ typedef struct {
 enum mrb_fiber_state {
   MRB_FIBER_CREATED = 0,
   MRB_FIBER_RUNNING,
-  MRB_FIBER_RESUMED,
+  MRB_FIBER_SUSPENDED,
   MRB_FIBER_TERMINATED,
 };
 
@@ -231,19 +232,27 @@ struct RClass * mrb_define_module_under(mrb_state *mrb, struct RClass *outer, co
 
 int mrb_get_args(mrb_state *mrb, const char *format, ...);
 
+/* `strlen` for character string literals (use with caution or `strlen` instead)
+    Adjacent string literals are concatenated in C/C++ in translation phase 6.
+    If `lit` is not one, the compiler will report a syntax error:
+     MSVC: "error C2143: syntax error : missing ')' before 'string'"
+     GCC:  "error: expected ')' before string constant"
+*/
+#define mrb_strlen_lit(lit) (sizeof(lit "") - 1)
+
 mrb_value mrb_funcall(mrb_state*, mrb_value, const char*, int,...);
 mrb_value mrb_funcall_argv(mrb_state*, mrb_value, mrb_sym, int, mrb_value*);
 mrb_value mrb_funcall_with_block(mrb_state*, mrb_value, mrb_sym, int, mrb_value*, mrb_value);
 mrb_sym mrb_intern_cstr(mrb_state*,const char*);
-mrb_sym mrb_intern(mrb_state*,const char*,size_t);
-mrb_sym mrb_intern_static(mrb_state*,const char*,size_t);
-#define mrb_intern_lit(mrb, lit) mrb_intern_static(mrb, (lit), sizeof(lit) - 1)
+mrb_sym mrb_intern(mrb_state*,const char*,mrb_int);
+mrb_sym mrb_intern_static(mrb_state*,const char*,mrb_int);
+#define mrb_intern_lit(mrb, lit) mrb_intern_static(mrb, lit, (mrb_int)mrb_strlen_lit(lit))
 mrb_sym mrb_intern_str(mrb_state*,mrb_value);
 mrb_value mrb_check_intern_cstr(mrb_state*,const char*);
-mrb_value mrb_check_intern(mrb_state*,const char*,size_t);
+mrb_value mrb_check_intern(mrb_state*,const char*,mrb_int);
 mrb_value mrb_check_intern_str(mrb_state*,mrb_value);
 const char *mrb_sym2name(mrb_state*,mrb_sym);
-const char *mrb_sym2name_len(mrb_state*,mrb_sym,size_t*);
+const char *mrb_sym2name_len(mrb_state*,mrb_sym,mrb_int*);
 mrb_value mrb_sym2str(mrb_state*,mrb_sym);
 
 void *mrb_malloc(mrb_state*, size_t);         /* raise RuntimeError if no mem */
@@ -254,10 +263,10 @@ void *mrb_malloc_simple(mrb_state*, size_t);  /* return NULL if no memory availa
 struct RBasic *mrb_obj_alloc(mrb_state*, enum mrb_vtype, struct RClass*);
 void mrb_free(mrb_state*, void*);
 
-mrb_value mrb_str_new(mrb_state *mrb, const char *p, size_t len);
+mrb_value mrb_str_new(mrb_state *mrb, const char *p, mrb_int len);
 mrb_value mrb_str_new_cstr(mrb_state*, const char*);
-mrb_value mrb_str_new_static(mrb_state *mrb, const char *p, size_t len);
-#define mrb_str_new_lit(mrb, lit) mrb_str_new_static(mrb, (lit), sizeof(lit) - 1)
+mrb_value mrb_str_new_static(mrb_state *mrb, const char *p, mrb_int len);
+#define mrb_str_new_lit(mrb, lit) mrb_str_new_static(mrb, (lit), (mrb_int)mrb_strlen_lit(lit))
 
 mrb_state* mrb_open(void);
 mrb_state* mrb_open_allocf(mrb_allocf, void *ud);
@@ -361,10 +370,10 @@ mrb_value mrb_to_int(mrb_state *mrb, mrb_value val);
 void mrb_check_type(mrb_state *mrb, mrb_value x, enum mrb_vtype t);
 
 typedef enum call_type {
-    CALL_PUBLIC,
-    CALL_FCALL,
-    CALL_VCALL,
-    CALL_TYPE_MAX
+  CALL_PUBLIC,
+  CALL_FCALL,
+  CALL_VCALL,
+  CALL_TYPE_MAX
 } call_type;
 
 void mrb_define_alias(mrb_state *mrb, struct RClass *klass, const char *name1, const char *name2);

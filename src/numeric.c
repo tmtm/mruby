@@ -680,7 +680,7 @@ int_to_i(mrb_state *mrb, mrb_value num)
   return num;
 }
 
-#define SQRT_INT_MAX ((mrb_int)1<<((sizeof(mrb_int)*CHAR_BIT-1)/2))
+#define SQRT_INT_MAX ((mrb_int)1<<((MRB_INT_BIT-1)/2))
 /*tests if N*N would overflow*/
 #define FIT_SQRT_INT(n) (((n)<SQRT_INT_MAX)&&((n)>=-SQRT_INT_MAX))
 
@@ -690,10 +690,10 @@ mrb_fixnum_mul(mrb_state *mrb, mrb_value x, mrb_value y)
   mrb_int a;
 
   a = mrb_fixnum(x);
-  if (a == 0) return x;
   if (mrb_fixnum_p(y)) {
     mrb_int b, c;
 
+    if (a == 0) return x;
     b = mrb_fixnum(y);
     if (FIT_SQRT_INT(a) && FIT_SQRT_INT(b))
       return mrb_fixnum_value(a*b);
@@ -959,13 +959,13 @@ fix_xor(mrb_state *mrb, mrb_value x)
   return mrb_fixnum_value(val);
 }
 
-#define NUMERIC_SHIFT_WIDTH_MAX (sizeof(mrb_int)*CHAR_BIT-1)
+#define NUMERIC_SHIFT_WIDTH_MAX (MRB_INT_BIT-1)
 
 static mrb_value
 lshift(mrb_state *mrb, mrb_int val, size_t width)
 {
   if (width > NUMERIC_SHIFT_WIDTH_MAX) {
-    mrb_raisef(mrb, E_RANGE_ERROR, "width(%S) > (%S:sizeof(mrb_int)*CHAR_BIT-1)",
+    mrb_raisef(mrb, E_RANGE_ERROR, "width(%S) > (%S:MRB_INT_BIT-1)",
                mrb_fixnum_value(width),
                mrb_fixnum_value(NUMERIC_SHIFT_WIDTH_MAX));
   }
@@ -1131,10 +1131,10 @@ mrb_fixnum_plus(mrb_state *mrb, mrb_value x, mrb_value y)
   mrb_int a;
 
   a = mrb_fixnum(x);
-  if (a == 0) return y;
   if (mrb_fixnum_p(y)) {
     mrb_int b, c;
 
+    if (a == 0) return y;
     b = mrb_fixnum(y);
     c = a + b;
     if (((a < 0) ^ (b < 0)) == 0 && (a < 0) != (c < 0)) {
@@ -1207,7 +1207,7 @@ fix_minus(mrb_state *mrb, mrb_value self)
 mrb_value
 mrb_fixnum_to_str(mrb_state *mrb, mrb_value x, int base)
 {
-  char buf[sizeof(mrb_int)*CHAR_BIT+1];
+  char buf[MRB_INT_BIT+1];
   char *b = buf + sizeof buf;
   mrb_int val = mrb_fixnum(x);
 
@@ -1306,15 +1306,14 @@ num_cmp(mrb_state *mrb, mrb_value self)
  * and <code>other</code>.
  */
 static mrb_value
-flo_plus(mrb_state *mrb, mrb_value self)
+flo_plus(mrb_state *mrb, mrb_value x)
 {
-  mrb_float x,  y;
+  mrb_value y;
 
-  x = mrb_float(self);
-  mrb_get_args(mrb, "f", &y);
-
-  return mrb_float_value(mrb, x + y);
+  mrb_get_args(mrb, "o", &y);
+  return mrb_float_value(mrb, mrb_float(x) + mrb_to_flo(mrb, y));
 }
+
 /* ------------------------------------------------------------------------*/
 void
 mrb_init_numeric(mrb_state *mrb)

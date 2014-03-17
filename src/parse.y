@@ -3526,8 +3526,8 @@ static int
 scan_hex(const int *start, int len, int *retlen)
 {
   static const char hexdigit[] = "0123456789abcdef0123456789ABCDEF";
-  register const int *s = start;
-  register int retval = 0;
+  const int *s = start;
+  int retval = 0;
   char *tmp;
 
   /* mrb_assert(len <= 2) */
@@ -3932,7 +3932,7 @@ arg_ambiguous(parser_state *p)
 static int
 parser_yylex(parser_state *p)
 {
-  register int c;
+  int c;
   int space_seen = 0;
   int cmd_state;
   enum mrb_lex_state_enum last_state;
@@ -5308,12 +5308,11 @@ void
 mrb_parser_set_filename(struct mrb_parser_state *p, const char *f)
 {
   mrb_sym sym;
-  size_t len;
   size_t i;
   mrb_sym* new_table;
 
   sym = mrb_intern_cstr(p->mrb, f);
-  p->filename = mrb_sym2name_len(p->mrb, sym, &len);
+  p->filename = mrb_sym2name_len(p->mrb, sym, NULL);
   p->lineno = (p->filename_table_length > 0)? 0 : 1;
 
   for(i = 0; i < p->filename_table_length; ++i) {
@@ -5336,8 +5335,7 @@ mrb_parser_set_filename(struct mrb_parser_state *p, const char *f)
 char const* mrb_parser_get_filename(struct mrb_parser_state* p, uint16_t idx) {
   if (idx >= p->filename_table_length) { return NULL; }
   else {
-    size_t len;
-    return mrb_sym2name_len(p->mrb, p->filename_table[idx], &len);
+    return mrb_sym2name_len(p->mrb, p->filename_table[idx], NULL);
   }
 }
 
