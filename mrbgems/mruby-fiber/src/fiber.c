@@ -3,6 +3,8 @@
 #include "mruby/class.h"
 #include "mruby/proc.h"
 
+#define fiber_ptr(o) ((struct RFiber*)mrb_ptr(o))
+
 #define FIBER_STACK_INIT_SIZE 64
 #define FIBER_CI_INIT_SIZE 8
 
@@ -62,7 +64,7 @@ static mrb_value
 fiber_init(mrb_state *mrb, mrb_value self)
 {
   static const struct mrb_context mrb_context_zero = { 0 };
-  struct RFiber *f = (struct RFiber*)mrb_ptr(self);
+  struct RFiber *f = fiber_ptr(self);
   struct mrb_context *c;
   struct RProc *p;
   mrb_callinfo *ci;
@@ -114,8 +116,9 @@ fiber_init(mrb_state *mrb, mrb_value self)
 static struct mrb_context*
 fiber_check(mrb_state *mrb, mrb_value fib)
 {
-  struct RFiber *f = (struct RFiber*)mrb_ptr(fib);
+  struct RFiber *f = fiber_ptr(fib);
 
+  mrb_assert(f->tt == MRB_TT_FIBER);
   if (!f->cxt) {
     mrb_raise(mrb, E_ARGUMENT_ERROR, "uninitialized Fiber");
   }
@@ -161,7 +164,7 @@ fiber_resume(mrb_state *mrb, mrb_value self)
       mrb_raise(mrb, E_ARGUMENT_ERROR, "can't cross C function boundary");
     }
   }
-  if (c->status == MRB_FIBER_RUNNING) {
+  if (c->status == MRB_FIBER_RUNNING || (mrb->c->prev && mrb->c->prev != mrb->root_c)) {
     mrb_raise(mrb, E_RUNTIME_ERROR, "double resume");
   }
   if (c->status == MRB_FIBER_TERMINATED) {
@@ -211,6 +214,19 @@ fiber_alive_p(mrb_state *mrb, mrb_value self)
   struct mrb_context *c = fiber_check(mrb, self);
   return mrb_bool_value(c->status != MRB_FIBER_TERMINATED);
 }
+
+static mrb_value
+fiber_eq(mrb_state *mrb, mrb_value self)
+{
+  mrb_value other;
+  mrb_get_args(mrb, "o", &other);
+
+  if (mrb_type(other) != MRB_TT_FIBER) {
+    return mrb_false_value();
+  }
+  return mrb_bool_value(fiber_ptr(self) == fiber_ptr(other));
+}
+
 
 mrb_value
 mrb_fiber_yield(mrb_state *mrb, int len, mrb_value *a)
@@ -286,6 +302,7 @@ mrb_mruby_fiber_gem_init(mrb_state* mrb)
   mrb_define_method(mrb, c, "initialize", fiber_init,    MRB_ARGS_NONE());
   mrb_define_method(mrb, c, "resume",     fiber_resume,  MRB_ARGS_ANY());
   mrb_define_method(mrb, c, "alive?",     fiber_alive_p, MRB_ARGS_NONE());
+  mrb_define_method(mrb, c, "==",         fiber_eq,      MRB_ARGS_REQ(1));
 
   mrb_define_class_method(mrb, c, "yield", fiber_yield, MRB_ARGS_ANY());
   mrb_define_class_method(mrb, c, "current", fiber_current, MRB_ARGS_NONE());
