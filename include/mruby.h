@@ -70,6 +70,7 @@ typedef struct {
 enum mrb_fiber_state {
   MRB_FIBER_CREATED = 0,
   MRB_FIBER_RUNNING,
+  MRB_FIBER_RESUMING,
   MRB_FIBER_SUSPENDED,
   MRB_FIBER_TERMINATED,
 };
@@ -364,6 +365,7 @@ void mrb_print_error(mrb_state *mrb);
 
 mrb_value mrb_yield(mrb_state *mrb, mrb_value b, mrb_value arg);
 mrb_value mrb_yield_argv(mrb_state *mrb, mrb_value b, int argc, mrb_value *argv);
+mrb_value mrb_yield_with_class(mrb_state *mrb, mrb_value b, int argc, mrb_value *argv, mrb_value self, struct RClass *c);
 
 void mrb_gc_protect(mrb_state *mrb, mrb_value obj);
 mrb_value mrb_to_int(mrb_state *mrb, mrb_value val);

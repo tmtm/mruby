@@ -455,8 +455,6 @@ mrb_obj_init_copy(mrb_state *mrb, mrb_value self)
   return self;
 }
 
-mrb_value mrb_yield_internal(mrb_state *mrb, mrb_value b, int argc, mrb_value *argv, mrb_value self, struct RClass *c);
-
 /* 15.3.1.3.18 */
 /*
  *  call-seq:
@@ -499,7 +497,7 @@ mrb_obj_instance_eval(mrb_state *mrb, mrb_value self)
     c = mrb_class_ptr(cv);
     break;
   }
-  return mrb_yield_internal(mrb, b, 0, 0, self, c);
+  return mrb_yield_with_class(mrb, b, 0, 0, self, c);
 }
 
 mrb_bool
