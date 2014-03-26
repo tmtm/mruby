@@ -1387,7 +1387,8 @@ RETRY_TRY_BLOCK:
           }
         }
       L_RESCUE:
-        irep = ci->proc->body.irep;
+        proc = ci->proc;
+        irep = proc->body.irep;
         pool = irep->pool;
         syms = irep->syms;
         regs = mrb->c->stack = ci[1].stackent;
@@ -1423,7 +1424,7 @@ RETRY_TRY_BLOCK:
               goto L_RAISE;
             }
             if (mrb->c->prev->ci == mrb->c->prev->cibase) {
-              mrb_value exc = mrb_exc_new_str_lit(mrb, E_RUNTIME_ERROR, "double resume");
+              mrb_value exc = mrb_exc_new_str_lit(mrb, E_FIBER_ERROR, "double resume");
               mrb->exc = mrb_obj_ptr(exc);
               goto L_RAISE;
             }
@@ -2268,4 +2269,21 @@ mrb_value
 mrb_run(mrb_state *mrb, struct RProc *proc, mrb_value self)
 {
   return mrb_context_run(mrb, proc, self, mrb->c->ci->argc + 2); /* argc + 2 (receiver and block) */
+}
+
+mrb_value
+mrb_toplevel_run(mrb_state *mrb, struct RProc *proc)
+{
+  mrb_callinfo *ci;
+  mrb_value v;
+
+  if (!mrb->c->cibase || mrb->c->ci == mrb->c->cibase) {
+    return mrb_context_run(mrb, proc, mrb_top_self(mrb), 0);
+  }
+  ci = cipush(mrb);
+  ci->acc = CI_ACC_SKIP;
+  v = mrb_context_run(mrb, proc, mrb_top_self(mrb), 0);
+  cipop(mrb);
+
+  return v;
 }

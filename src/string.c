@@ -29,7 +29,6 @@
   if (STR_EMBED_P(s)) {\
     STR_SET_EMBED_LEN((s),(n));\
   } else {\
-    mrb_assert((n) <= MRB_INT_MAX);\
     s->as.heap.len = (mrb_int)(n);\
   }\
 } while (0)
@@ -74,12 +73,12 @@ mrb_str_strlen(mrb_state *mrb, struct RString *s)
 #define RESIZE_CAPA(s,capacity) do {\
   if (STR_EMBED_P(s)) {\
     if (RSTRING_EMBED_LEN_MAX < (capacity)) {\
-      char *const tmp = (char *)mrb_malloc(mrb, (capacity)+1);\
-      const mrb_int len = STR_EMBED_LEN(s);\
-      memcpy(tmp, s->as.ary, len);\
+      char *const __tmp__ = (char *)mrb_malloc(mrb, (capacity)+1);\
+      const mrb_int __len__ = STR_EMBED_LEN(s);\
+      memcpy(__tmp__, s->as.ary, __len__);\
       STR_UNSET_EMBED_FLAG(s);\
-      s->as.heap.ptr = tmp;\
-      s->as.heap.len = len;\
+      s->as.heap.ptr = __tmp__;\
+      s->as.heap.len = __len__;\
       s->as.heap.aux.capa = (capacity);\
     }\
   } else {\
@@ -131,7 +130,7 @@ mrb_str_modify(mrb_state *mrb, struct RString *s)
     return;
   }
   if (s->flags & MRB_STR_NOFREE) {
-    char *p = STR_PTR(s);
+    char *p = s->as.heap.ptr;
 
     s->as.heap.ptr = (char *)mrb_malloc(mrb, (size_t)s->as.heap.len+1);
     if (p) {
@@ -147,7 +146,7 @@ mrb_str_modify(mrb_state *mrb, struct RString *s)
 mrb_value
 mrb_str_resize(mrb_state *mrb, mrb_value str, mrb_int len)
 {
-  int slen;
+  mrb_int slen;
   struct RString *s = mrb_str_ptr(str);
 
   mrb_str_modify(mrb, s);
@@ -274,6 +273,7 @@ str_buf_cat(mrb_state *mrb, struct RString *s, const char *ptr, size_t len)
       ptr = STR_PTR(s) + off;
   }
   memcpy(STR_PTR(s) + STR_LEN(s), ptr, len);
+  mrb_assert(total <= MRB_INT_MAX);
   STR_SET_LEN(s, total);
   STR_PTR(s)[total] = '\0';   /* sentinel */
 }
@@ -383,16 +383,16 @@ str_make_shared(mrb_state *mrb, struct RString *s)
     }
     else if (s->flags & MRB_STR_NOFREE) {
       shared->nofree = TRUE;
-      shared->ptr = STR_PTR(s);
+      shared->ptr = s->as.heap.ptr;
       s->flags &= ~MRB_STR_NOFREE;
     }
     else {
       shared->nofree = FALSE;
       if (s->as.heap.aux.capa > s->as.heap.len) {
-        s->as.heap.ptr = shared->ptr = (char *)mrb_realloc(mrb, STR_PTR(s), s->as.heap.len+1);
+        s->as.heap.ptr = shared->ptr = (char *)mrb_realloc(mrb, s->as.heap.ptr, s->as.heap.len+1);
       }
       else {
-        shared->ptr = STR_PTR(s);
+        shared->ptr = s->as.heap.ptr;
       }
     }
     shared->len = s->as.heap.len;
@@ -1086,7 +1086,7 @@ mrb_str_chop_bang(mrb_state *mrb, mrb_value str)
 
   mrb_str_modify(mrb, s);
   if (STR_LEN(s) > 0) {
-    int len;
+    mrb_int len;
     len = STR_LEN(s) - 1;
     if (STR_PTR(s)[len] == '\n') {
       if (len > 0 &&
@@ -1442,7 +1442,7 @@ str_replace(mrb_state *mrb, struct RString *s1, struct RString *s2)
   else {
     if (len <= RSTRING_EMBED_LEN_MAX) {
       STR_SET_EMBED_FLAG(s1);
-      memcpy(STR_PTR(s1), STR_PTR(s2), len);
+      memcpy(s1->as.ary, STR_PTR(s2), len);
       STR_SET_EMBED_LEN(s1, len);
     }
     else {
@@ -1706,7 +1706,7 @@ mrb_str_rindex_m(mrb_state *mrb, mrb_value str)
   int argc;
   mrb_value sub;
   mrb_value vpos;
-  int pos, len = RSTRING_LEN(str);
+  mrb_int pos, len = RSTRING_LEN(str);
 
   mrb_get_args(mrb, "*", &argv, &argc);
   if (argc == 2) {
@@ -2097,7 +2097,7 @@ mrb_value
 mrb_str_to_inum(mrb_state *mrb, mrb_value str, int base, mrb_bool badcheck)
 {
   char *s;
-  int len;
+  mrb_int len;
 
   str = mrb_str_to_str(mrb, str);
   if (badcheck) {
@@ -2153,7 +2153,7 @@ mrb_str_to_i(mrb_state *mrb, mrb_value self)
   if (base < 0) {
     mrb_raisef(mrb, E_ARGUMENT_ERROR, "illegal radix %S", mrb_fixnum_value(base));
   }
-  return mrb_str_to_inum(mrb, self, base, 0/*Qfalse*/);
+  return mrb_str_to_inum(mrb, self, base, FALSE);
 }
 
 double
@@ -2229,7 +2229,7 @@ double
 mrb_str_to_dbl(mrb_state *mrb, mrb_value str, mrb_bool badcheck)
 {
   char *s;
-  int len;
+  mrb_int len;
 
   str = mrb_str_to_str(mrb, str);
   s = RSTRING_PTR(str);
@@ -2263,7 +2263,7 @@ mrb_str_to_dbl(mrb_state *mrb, mrb_value str, mrb_bool badcheck)
 static mrb_value
 mrb_str_to_f(mrb_state *mrb, mrb_value self)
 {
-  return mrb_float_value(mrb, mrb_str_to_dbl(mrb, self, 0/*Qfalse*/));
+  return mrb_float_value(mrb, mrb_str_to_dbl(mrb, self, FALSE));
 }
 
 /* 15.2.10.5.40 */
