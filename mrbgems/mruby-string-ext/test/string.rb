@@ -134,6 +134,27 @@ assert('String#rpartition') do
   assert_equal ["", "", ""],      "".rpartition("a")
 end
 
+assert('String#hex') do
+  assert_equal 16, "10".hex
+  assert_equal 255, "ff".hex
+  assert_equal 16, "0x10".hex
+  assert_equal (-16), "-0x10".hex
+  assert_equal 0, "xyz".hex
+  assert_equal 16, "10z".hex
+  assert_equal 0, "".hex
+end
+
+assert('String#oct') do
+  assert_equal 8, "10".oct
+  assert_equal 7, "7".oct
+  assert_equal 0, "8".oct
+  assert_equal 0, "9".oct
+  assert_equal 0, "xyz".oct
+  assert_equal 8, "10z".oct
+  assert_equal 8, "010".oct
+  assert_equal (-8), "-10".oct
+end
+
 assert('String#%') do
   assert_equal "00123", ("%05d" % 123)
   assert_equal "ID   : 0000007b",  ("%-5s: %08x" % [ "ID", 123 ])

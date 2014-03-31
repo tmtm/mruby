@@ -1953,10 +1953,10 @@ mrb_str_split_m(mrb_state *mrb, mrb_value str)
 mrb_value
 mrb_cstr_to_inum(mrb_state *mrb, const char *str, int base, int badcheck)
 {
-  char *end;
+  const char *p;
   char sign = 1;
-  int c;
-  unsigned long n;
+  int c, uscore;
+  unsigned long n = 0;
   mrb_int val;
 
 #undef ISDIGIT
@@ -2043,14 +2043,14 @@ mrb_cstr_to_inum(mrb_state *mrb, const char *str, int base, int badcheck)
       break;
   } /* end of switch (base) { */
   if (*str == '0') {    /* squeeze preceeding 0s */
-    int us = 0;
+    uscore = 0;
     while ((c = *++str) == '0' || c == '_') {
       if (c == '_') {
-        if (++us >= 2)
+        if (++uscore >= 2)
           break;
       }
       else
-        us = 0;
+        uscore = 0;
     }
     if (!(c = *str) || ISSPACE(c)) --str;
   }
@@ -2061,15 +2061,33 @@ mrb_cstr_to_inum(mrb_state *mrb, const char *str, int base, int badcheck)
     return mrb_fixnum_value(0);
   }
 
-  n = strtoul((char*)str, &end, base);
+  uscore = 0;
+  for (p=str;*p;p++) {
+    if (*p == '_') {
+      if (uscore == 0) {
+        uscore++;
+        continue;
+      }
+      if (badcheck) goto bad;
+      break;
+    }
+    uscore = 0;
+    c = conv_digit(*p);
+    if (c < 0 || c >= base) {
+      if (badcheck) goto bad;
+      break;
+    }
+    n *= base;
+    n += c;
+  }
   if (n > MRB_INT_MAX) {
     mrb_raisef(mrb, E_ARGUMENT_ERROR, "string (%S) too big for integer", mrb_str_new_cstr(mrb, str));
   }
   val = n;
   if (badcheck) {
-    if (end == str) goto bad; /* no number */
-    while (*end && ISSPACE(*end)) end++;
-    if (*end) goto bad;        /* trailing garbage */
+    if (p == str) goto bad; /* no number */
+    while (*p && ISSPACE(*p)) p++;
+    if (*p) goto bad;           /* trailing garbage */
   }
 
   return mrb_fixnum_value(sign ? val : -val);

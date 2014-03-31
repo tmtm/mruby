@@ -460,6 +460,7 @@ mrb_f_send(mrb_state *mrb, mrb_value self)
   ci->mid = name;
   ci->target_class = c;
   ci->proc = p;
+  ci->nregs = p->body.irep->nregs;
   regs = mrb->c->stack+1;
   /* remove first symbol from arguments */
   if (ci->argc >= 0) {
@@ -2284,6 +2285,7 @@ mrb_toplevel_run(mrb_state *mrb, struct RProc *proc)
   ci->acc = CI_ACC_SKIP;
   ci->eidx = 0;
   ci->ridx = 0;
+  ci->target_class = mrb->object_class;
   v = mrb_context_run(mrb, proc, mrb_top_self(mrb), 0);
   cipop(mrb);
 
