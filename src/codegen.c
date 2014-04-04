@@ -276,8 +276,11 @@ genop_peep(codegen_scope *s, mrb_code i, int val)
       case OP_RETURN:
         return 0;
       case OP_MOVE:
-        s->iseq[s->pc-1] = MKOP_AB(OP_RETURN, GETARG_B(i0), OP_R_NORMAL);
-        return 0;
+        if (GETARG_A(i0) >= s->nlocals) {
+          s->iseq[s->pc-1] = MKOP_AB(OP_RETURN, GETARG_B(i0), OP_R_NORMAL);
+          return 0;
+        }
+        break;
       case OP_SETIV:
       case OP_SETCV:
       case OP_SETCONST:
@@ -716,6 +719,7 @@ attrsym(codegen_scope *s, mrb_sym a)
                                  + 1 /* '=' */
                                  + 1 /* '\0' */
                                  );
+  mrb_assert(len <= SIZE_MAX);
   memcpy(name2, name, (size_t)len);
   name2[len] = '=';
   name2[len+1] = '\0';
