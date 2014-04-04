@@ -12,7 +12,11 @@ class Hash
   # ISO 15.2.13.4.1
   def == (hash)
     return true if self.equal?(hash)
-    hash = hash.to_hash
+    begin
+      hash = hash.to_hash
+    rescue NoMethodError
+      return false
+    end
     return false if self.size != hash.size
     self.each do |k,v|
       return false unless hash.key?(k)
@@ -28,7 +32,11 @@ class Hash
   # ISO 15.2.13.4.32 (x)
   def eql?(hash)
     return true if self.equal?(hash)
-    hash = hash.to_hash
+    begin
+      hash = hash.to_hash
+    rescue NoMethodError
+      return false
+    end
     return false if self.size != hash.size
     self.each do |k,v|
       return false unless hash.key?(k)
@@ -135,12 +143,19 @@ class Hash
   end
 
   ##
-  # Create a direct instance of the class Hash.
+  # Replaces the contents of <i>hsh</i> with the contents of other hash
   #
-  # ISO 15.2.13.4.16
-  def initialize(*args, &block)
-    self.__init_core(block, *args)
+  # ISO 15.2.13.4.23
+  def replace(hash)
+    self.clear
+    hash = hash.to_hash
+    hash.each_key{|k|
+      self[k] = hash[k]
+    }
+    self
   end
+  # ISO 15.2.13.4.17
+  alias initialize_copy replace
 
   ##
   # Return a hash which contains the content of
