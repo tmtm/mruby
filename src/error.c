@@ -122,28 +122,30 @@ static mrb_value
 exc_inspect(mrb_state *mrb, mrb_value exc)
 {
   mrb_value str, mesg, file, line;
+  mrb_bool append_mesg;
 
   mesg = mrb_attr_get(mrb, exc, mrb_intern_lit(mrb, "mesg"));
   file = mrb_attr_get(mrb, exc, mrb_intern_lit(mrb, "file"));
   line = mrb_attr_get(mrb, exc, mrb_intern_lit(mrb, "line"));
+  append_mesg = !mrb_nil_p(mesg) && RSTRING_LEN(mesg) > 0;
 
   if (!mrb_nil_p(file) && !mrb_nil_p(line)) {
-    str = file;
+    str = mrb_str_dup(mrb, file);
     mrb_str_cat_lit(mrb, str, ":");
     mrb_str_append(mrb, str, line);
     mrb_str_cat_lit(mrb, str, ": ");
-    if (!mrb_nil_p(mesg) && RSTRING_LEN(mesg) > 0) {
+    if (append_mesg) {
       mrb_str_append(mrb, str, mesg);
       mrb_str_cat_lit(mrb, str, " (");
     }
     mrb_str_cat_cstr(mrb, str, mrb_obj_classname(mrb, exc));
-    if (!mrb_nil_p(mesg) && RSTRING_LEN(mesg) > 0) {
+    if (append_mesg) {
       mrb_str_cat_lit(mrb, str, ")");
     }
   }
   else {
     str = mrb_str_new_cstr(mrb, mrb_obj_classname(mrb, exc));
-    if (!mrb_nil_p(mesg) && RSTRING_LEN(mesg) > 0) {
+    if (append_mesg) {
       mrb_str_cat_lit(mrb, str, ": ");
       mrb_str_append(mrb, str, mesg);
     }
@@ -353,7 +355,7 @@ set_backtrace(mrb_state *mrb, mrb_value info, mrb_value bt)
 }
 
 static mrb_value
-make_exception(mrb_state *mrb, int argc, mrb_value *argv, mrb_bool isstr)
+make_exception(mrb_state *mrb, int argc, const mrb_value *argv, mrb_bool isstr)
 {
   mrb_value mesg;
   int n;
@@ -406,7 +408,7 @@ exception_call:
 }
 
 mrb_value
-mrb_make_exception(mrb_state *mrb, int argc, mrb_value *argv)
+mrb_make_exception(mrb_state *mrb, int argc, const mrb_value *argv)
 {
   return make_exception(mrb, argc, argv, TRUE);
 }
