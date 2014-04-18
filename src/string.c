@@ -15,7 +15,7 @@
 #include "mruby/range.h"
 #include "mruby/string.h"
 #include "mruby/variable.h"
-#include "re.h"
+#include "mruby/re.h"
 
 #define STR_EMBED_P(s) ((s)->flags & MRB_STR_EMBED)
 #define STR_SET_EMBED_FLAG(s) ((s)->flags |= MRB_STR_EMBED)
@@ -718,7 +718,7 @@ noregexp(mrb_state *mrb, mrb_value self)
 static void
 regexp_check(mrb_state *mrb, mrb_value obj)
 {
-  if (!memcmp(mrb_obj_classname(mrb, obj), REGEXP_CLASS, sizeof(REGEXP_CLASS) - 1)) {
+  if (mrb_regexp_p(mrb, obj)) {
     noregexp(mrb, obj);
   }
 }
