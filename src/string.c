@@ -279,14 +279,6 @@ str_buf_cat(mrb_state *mrb, struct RString *s, const char *ptr, size_t len)
 }
 
 mrb_value
-mrb_str_buf_cat(mrb_state *mrb, mrb_value str, const char *ptr, size_t len)
-{
-  if (len == 0) return str;
-  str_buf_cat(mrb, mrb_str_ptr(str), ptr, len);
-  return str;
-}
-
-mrb_value
 mrb_str_new(mrb_state *mrb, const char *p, size_t len)
 {
   struct RString *s;
@@ -2519,12 +2511,12 @@ mrb_str_inspect(mrb_state *mrb, mrb_value str)
       c = *p;
       if (c == '"'|| c == '\\' || (c == '#' && IS_EVSTR(p, pend))) {
           buf[0] = '\\'; buf[1] = c;
-          mrb_str_buf_cat(mrb, result, buf, 2);
+          mrb_str_cat(mrb, result, buf, 2);
           continue;
       }
       if (ISPRINT(c)) {
           buf[0] = c;
-          mrb_str_buf_cat(mrb, result, buf, 1);
+          mrb_str_cat(mrb, result, buf, 1);
           continue;
       }
       switch (c) {
@@ -2541,7 +2533,7 @@ mrb_str_inspect(mrb_state *mrb, mrb_value str)
       if (cc) {
           buf[0] = '\\';
           buf[1] = (char)cc;
-          mrb_str_buf_cat(mrb, result, buf, 2);
+          mrb_str_cat(mrb, result, buf, 2);
           continue;
       }
       else {
@@ -2549,7 +2541,7 @@ mrb_str_inspect(mrb_state *mrb, mrb_value str)
         buf[3] = '0' + c % 8; c /= 8;
         buf[2] = '0' + c % 8; c /= 8;
         buf[1] = '0' + c % 8;
-        mrb_str_buf_cat(mrb, result, buf, 4);
+        mrb_str_cat(mrb, result, buf, 4);
         continue;
       }
     }
