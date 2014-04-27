@@ -819,6 +819,7 @@ gen_call(codegen_scope *s, node *tree, mrb_sym name, int sp, int val)
   else {
     blk = cursp();
   }
+  push();pop();
   pop_n(n+1);
   {
     mrb_int len;
@@ -1631,6 +1632,7 @@ codegen(codegen_scope *s, node *tree, int val)
         break;
       }
       codegen(s, tree->cdr->cdr->car, VAL);
+      push(); pop();
       pop(); pop();
 
       idx = new_msym(s, sym);
@@ -1686,6 +1688,7 @@ codegen(codegen_scope *s, node *tree, int val)
       }
       else {
         genop(s, MKOP_A(OP_LOADNIL, cursp()));
+        push(); pop();
       }
       pop_n(n+1);
       if (sendv) n = CALL_MAXARGS;
@@ -1707,12 +1710,12 @@ codegen(codegen_scope *s, node *tree, int val)
       }
       if (s2) ainfo = s2->ainfo;
       genop(s, MKOP_ABx(OP_ARGARY, cursp(), (ainfo<<4)|(lv & 0xf)));
+      push(); push(); pop();    /* ARGARY pushes two values */
       if (tree && tree->cdr) {
-        push();
         codegen(s, tree->cdr, VAL);
-        pop_n(2);
+        pop();
       }
-      pop();
+      pop(); pop();
       genop(s, MKOP_ABC(OP_SUPER, cursp(), 0, CALL_MAXARGS));
       if (val) push();
     }
@@ -1926,7 +1929,7 @@ codegen(codegen_scope *s, node *tree, int val)
       mrb_value str = mrb_str_buf_new(mrb, 4);
 
       mrb_str_cat_lit(mrb, str, "$");
-      mrb_str_buf_append(mrb, str, mrb_fixnum_to_str(mrb, fix, 10));
+      mrb_str_cat_str(mrb, str, mrb_fixnum_to_str(mrb, fix, 10));
       sym = new_sym(s, mrb_intern_str(mrb, str));
       genop(s, MKOP_ABx(OP_GETGLOBAL, cursp(), sym));
       push();
@@ -2402,6 +2405,7 @@ codegen(codegen_scope *s, node *tree, int val)
       genop(s, MKOP_A(OP_TCLASS, cursp()));
       push();
       genop(s, MKOP_Abc(OP_LAMBDA, cursp(), idx, OP_L_METHOD));
+      push(); pop();
       pop();
       genop(s, MKOP_AB(OP_METHOD, cursp(), sym));
       if (val) {
