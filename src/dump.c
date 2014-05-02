@@ -13,6 +13,8 @@
 #include "mruby/numeric.h"
 #include "mruby/debug.h"
 
+#ifdef ENABLE_STDIO
+
 static size_t get_irep_record_size_1(mrb_state *mrb, mrb_irep *irep);
 
 #if UINT32_MAX > SIZE_MAX
@@ -252,7 +254,7 @@ get_irep_record_size(mrb_state *mrb, mrb_irep *irep)
 {
   size_t size = 0;
   size_t irep_no;
-  
+
   size = get_irep_record_size_1(mrb, irep);
   for (irep_no = 0; irep_no < irep->rlen; irep_no++) {
     size += get_irep_record_size(mrb, irep->reps[irep_no]);
@@ -603,7 +605,7 @@ write_debug_record(mrb_state *mrb, mrb_irep *irep, uint8_t *bin, mrb_sym const* 
 {
   size_t size, len;
   size_t irep_no;
-  
+
   size = len = write_debug_record_1(mrb, irep, bin, filenames, filenames_len);
   bin += len;
   for (irep_no = 0; irep_no < irep->rlen; irep_no++) {
@@ -723,7 +725,7 @@ is_debug_info_defined(mrb_irep *irep)
   return TRUE;
 }
 
-static int
+int
 dump_irep(mrb_state *mrb, mrb_irep *irep, int debug_info, uint8_t **bin, size_t *bin_size)
 {
   int result = MRB_DUMP_GENERAL_FAILURE;
@@ -801,9 +803,6 @@ error_exit:
   }
   return result;
 }
-
-
-#ifdef ENABLE_STDIO
 
 int
 mrb_dump_irep_binary(mrb_state *mrb, mrb_irep *irep, int debug_info, FILE* fp)

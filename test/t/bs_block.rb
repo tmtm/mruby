@@ -488,6 +488,30 @@ assert("BS Block 35") do
   assert_equal :ok, TestReturnFromNestedBlock_BSBlock35.test
 end
 
+assert('BS Block 36') do
+  def iter
+    yield 1, 2, 3, 4, 5
+  end
+
+  assert_equal([1, 2, [3, 4], 5]) do
+    iter{|a, b, *c, d|
+      [a, b, c, d]
+    }
+  end
+end
+
+assert('BS Block 37') do
+  def iter
+    yield 1, 2, 3
+  end
+
+  assert_equal([1, 2, [], 3]) do
+    iter{|a, b, *c, d|
+      [a, b, c, d]
+    }
+  end
+end
+
 assert("Issue #1579") do
   # https://github.com/mruby/mruby/issues/1579
 
