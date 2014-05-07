@@ -8,11 +8,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "mruby.h"
-#include "mruby/array.h"
-#include "mruby/proc.h"
-#include "mruby/compile.h"
-#include "mruby/string.h"
+#include <stdio.h>
 
 #ifdef ENABLE_READLINE
 #include <readline/readline.h>
@@ -42,6 +38,11 @@ char history_path[PATH_MAX];
 #include "mruby/variable.h"
 extern mrb_value mrb_file_exist(mrb_state *mrb, mrb_value fname);
 #endif
+#include "mruby.h"
+#include "mruby/array.h"
+#include "mruby/proc.h"
+#include "mruby/compile.h"
+#include "mruby/string.h"
 
 static void
 p(mrb_state *mrb, mrb_value obj, int prompt)

@@ -309,7 +309,7 @@ flodivmod(mrb_state *mrb, mrb_float x, mrb_float y, mrb_float *divp, mrb_float *
   }
   else {
     mod = fmod(x, y);
-    if (isinf(x) && !isinf(y) && !isnan(y))
+    if (isinf(x) && isfinite(y))
       div = x;
     else
       div = (x - mod) / y;
@@ -495,7 +495,7 @@ flo_finite_p(mrb_state *mrb, mrb_value num)
 {
   mrb_float value = mrb_float(num);
 
-  return mrb_bool_value(!(isinf(value) || isnan(value)));
+  return mrb_bool_value(isfinite(value));
 }
 
 /* 15.2.9.3.10 */
@@ -626,7 +626,7 @@ flo_round(mrb_state *mrb, mrb_value num)
   }
 
   if (ndigits > 0) {
-    if (isinf(number) || isnan(number)) return num;
+    if (!isfinite(number)) return num;
     return mrb_float_value(mrb, number);
   }
   return mrb_fixnum_value((mrb_int)number);
@@ -774,17 +774,17 @@ static mrb_value
 fix_mod(mrb_state *mrb, mrb_value x)
 {
   mrb_value y;
-  mrb_int a, b;
+  mrb_int a;
 
   mrb_get_args(mrb, "o", &y);
   a = mrb_fixnum(x);
-  if (mrb_fixnum_p(y) && (b=mrb_fixnum(y)) != 0) {
-    mrb_int mod;
+  if (mrb_fixnum_p(y)) {
+    mrb_int b, mod;
 
-    if (mrb_fixnum(y) == 0) {
+    if ((b=mrb_fixnum(y)) == 0) {
       return mrb_float_value(mrb, NAN);
     }
-    fixdivmod(mrb, a, mrb_fixnum(y), 0, &mod);
+    fixdivmod(mrb, a, b, 0, &mod);
     return mrb_fixnum_value(mod);
   }
   else {
@@ -1109,9 +1109,7 @@ mrb_fixnum_plus(mrb_state *mrb, mrb_value x, mrb_value y)
 
     if (a == 0) return y;
     b = mrb_fixnum(y);
-    c = a + b;
-    if (((a < 0) ^ (b < 0)) == 0 && (a < 0) != (c < 0)) {
-      /* integer overflow */
+    if (mrb_int_add_overflow(a, b, &c)) {
       return mrb_float_value(mrb, (mrb_float)a + (mrb_float)b);
     }
     return mrb_fixnum_value(c);
@@ -1147,9 +1145,7 @@ mrb_fixnum_minus(mrb_state *mrb, mrb_value x, mrb_value y)
     mrb_int b, c;
 
     b = mrb_fixnum(y);
-    c = a - b;
-    if (((a < 0) ^ (b < 0)) != 0 && (a < 0) != (c < 0)) {
-      /* integer overflow */
+    if (mrb_int_sub_overflow(a, b, &c)) {
       return mrb_float_value(mrb, (mrb_float)a - (mrb_float)b);
     }
     return mrb_fixnum_value(c);
