@@ -42,6 +42,16 @@ assert('Exception.exception', '15.2.22.4.1') do
   assert_equal 'a', e.message
 end
 
+assert('NameError', '15.2.31') do
+  assert_raise(NameError) do
+    raise NameError.new
+  end
+
+  e = NameError.new "msg", "name"
+  assert_equal "msg", e.message
+  assert_equal "name", e.name
+end
+
 assert('ScriptError', '15.2.37') do
   assert_raise(ScriptError) do
     raise ScriptError.new
@@ -341,17 +351,17 @@ assert('Exception 19') do
 end
 
 assert('Exception#inspect without message') do
-  Exception.new.inspect
+  assert_equal "Exception: Exception", Exception.new.inspect
 end
 
 assert('Exception#backtrace') do
-  begin
-    raise "get backtrace"
-  rescue => e
-    e.backtrace
+  assert_nothing_raised do
+    begin
+      raise "get backtrace"
+    rescue => e
+      e.backtrace
+    end
   end
-
-  true
 end
 
 assert('Raise in ensure') do

@@ -1,5 +1,8 @@
 class Hash
 
+  #  ISO does not define Hash#each_pair, so each_pair is defined in gem.
+  alias each_pair each
+
   ##
   # call-seq:
   #     hsh.merge!(other_hash)                                 -> hsh
@@ -22,7 +25,7 @@ class Hash
   #
 
   def merge!(other, &block)
-    raise "can't convert argument into Hash" unless other.respond_to?(:to_hash)
+    raise TypeError, "can't convert argument into Hash" unless other.respond_to?(:to_hash)
     if block
       other.each_key{|k|
         self[k] = (self.has_key?(k))? block.call(k, self[k], other[k]): other[k]
@@ -33,7 +36,6 @@ class Hash
     self
   end
 
-  alias each_pair each
   alias update merge!
 
   ##
@@ -159,5 +161,25 @@ class Hash
       end
     end
     self
+  end
+
+  ##
+  #  call-seq:
+  #     hsh.key(value)    -> key
+  #
+  #  Returns the key of an occurrence of a given value. If the value is
+  #  not found, returns <code>nil</code>.
+  #
+  #     h = { "a" => 100, "b" => 200, "c" => 300, "d" => 300 }
+  #     h.key(200)   #=> "b"
+  #     h.key(300)   #=> "c"
+  #     h.key(999)   #=> nil
+  #
+
+  def key(val)
+    self.each do |k, v|
+      return k if v == val
+    end
+    nil
   end
 end

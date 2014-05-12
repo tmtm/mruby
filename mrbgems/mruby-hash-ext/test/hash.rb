@@ -16,6 +16,10 @@ assert('Hash#merge!') do
                'xyz_key' => 'xyz_value' }, result_1)
   assert_equal({'abc_key' => 'abc_value', 'cba_key' => 'cba_value',
                'xyz_key' => 'xyz_value' }, result_2)
+
+  assert_raise(TypeError) do
+    { 'abc_key' => 'abc_value' }.merge! "a"
+  end
 end
 
 assert('Hash#values_at') do
@@ -101,4 +105,13 @@ assert("Hash#keep_if") do
   assert_equal({3=>4,5=>6}, h.keep_if {|k, v| k + v >= 7 })
   h = { 1 => 2, 3 => 4, 5 => 6 }
   assert_equal({ 1 => 2, 3=> 4, 5 =>6} , h.keep_if { true })
+end
+
+assert("Hash#key") do
+  h = { "a" => 100, "b" => 200, "c" => 300, "d" => 300, nil => 'nil', 'nil' => nil }
+  assert_equal "b", h.key(200)
+  assert_equal "c", h.key(300)
+  assert_nil h.key(999)
+  assert_nil h.key('nil')
+  assert_equal 'nil', h.key(nil)
 end

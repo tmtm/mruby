@@ -527,6 +527,15 @@ assert('String#upcase!', '15.2.10.5.43') do
   assert_equal 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', b
 end
 
+assert('String#inspect', '15.2.10.5.46') do
+  # should not raise an exception - regress #1210
+  assert_nothing_raised do
+  ("\1" * 100).inspect
+  end
+
+  assert_equal "\"\\000\"", "\0".inspect
+end
+
 # Not ISO specified
 
 assert('String interpolation (mrb_str_concat for shared strings)') do
@@ -561,9 +570,4 @@ end
 
 assert('String#dump') do
   ("\1" * 100).dump     # should not raise an exception - regress #1210
-end
-
-assert('String#inspect') do
-  ("\1" * 100).inspect  # should not raise an exception - regress #1210
-  assert_equal "\"\\000\"", "\0".inspect
 end
