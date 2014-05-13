@@ -1286,6 +1286,9 @@ RETRY_TRY_BLOCK:
       int len = m1 + o + r + m2;
       mrb_value *blk = &argv[argc < 0 ? 1 : argc];
 
+      if (!mrb_nil_p(*blk) && mrb_type(*blk) != MRB_TT_PROC) {
+        *blk = mrb_convert_type(mrb, *blk, MRB_TT_PROC, "Proc", "to_proc");
+      }
       if (argc < 0) {
         struct RArray *ary = mrb_ary_ptr(regs[1]);
         argv = ary->ptr;
@@ -1301,6 +1304,7 @@ RETRY_TRY_BLOCK:
         }
       }
       else if (len > 1 && argc == 1 && mrb_array_p(argv[0])) {
+        mrb_gc_protect(mrb, argv[0]);
         argc = mrb_ary_ptr(argv[0])->len;
         argv = mrb_ary_ptr(argv[0])->ptr;
       }
@@ -1725,19 +1729,24 @@ RETRY_TRY_BLOCK:
       switch (TYPES2(mrb_type(regs[a]),mrb_type(regs[a+1]))) {
       case TYPES2(MRB_TT_FIXNUM,MRB_TT_FIXNUM):
         {
-          mrb_int x, y, z;
+          mrb_value z;
 
-          x = mrb_fixnum(regs[a]);
-          y = mrb_fixnum(regs[a+1]);
-          z = x * y;
-#ifdef MRB_WORD_BOXING
-          z = (z << MRB_FIXNUM_SHIFT) / (1 << MRB_FIXNUM_SHIFT);
-#endif
-          if (x != 0 && z/x != y) {
-            SET_FLT_VALUE(mrb, regs[a], (mrb_float)x * (mrb_float)y);
-          }
-          else {
-            SET_INT_VALUE(regs[a], z);
+          z = mrb_fixnum_mul(mrb, regs[a], regs[a+1]);
+
+          switch (mrb_type(z)) {
+          case MRB_TT_FIXNUM:
+            {
+              SET_INT_VALUE(regs[a], mrb_fixnum(z));
+            }
+            break;
+          case MRB_TT_FLOAT:
+            {
+              SET_FLT_VALUE(mrb, regs[a], mrb_float(z));
+            }
+            break;
+          default:
+            /* cannot happen */
+            break;
           }
         }
         break;
