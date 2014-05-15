@@ -2503,7 +2503,12 @@ scope_new(mrb_state *mrb, codegen_scope *prev, node *lv)
     p->irep->lv = (struct mrb_locals*)mrb_malloc(mrb, sizeof(struct mrb_locals) * (p->nlocals - 1));
     for (i=0, n=lv; n; i++,n=n->cdr) {
       p->irep->lv[i].name = lv_name(n);
-      p->irep->lv[i].r = lv_idx(p, lv_name(n));
+      if (lv_name(n)) {
+        p->irep->lv[i].r = lv_idx(p, lv_name(n));
+      }
+      else {
+        p->irep->lv[i].r = 0;
+      }
     }
     mrb_assert(i + 1 == p->nlocals);
   }
@@ -2638,6 +2643,7 @@ loop_pop(codegen_scope *s, int val)
   if (val) push();
 }
 
+#ifdef ENABLE_STDIO
 static int
 print_r(mrb_state *mrb, mrb_irep *irep, size_t n, int pre)
 {
@@ -2680,6 +2686,7 @@ print_lv(mrb_state *mrb, mrb_irep *irep, mrb_code c, int r)
   }
   printf("\n");
 }
+#endif
 
 static void
 codedump(mrb_state *mrb, mrb_irep *irep)
