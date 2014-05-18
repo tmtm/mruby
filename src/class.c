@@ -26,7 +26,7 @@ mrb_gc_mark_mt(mrb_state *mrb, struct RClass *c)
 
   if (!h) return;
   for (k = kh_begin(h); k != kh_end(h); k++) {
-    if (kh_exist(h, k)){
+    if (kh_exist(h, k)) {
       struct RProc *m = kh_value(h, k);
       if (m) {
         mrb_gc_mark(mrb, (struct RBasic*)m);
@@ -227,6 +227,7 @@ mrb_vm_define_class(mrb_state *mrb, mrb_value outer, mrb_value super, mrb_sym id
   }
   switch (mrb_type(outer)) {
   case MRB_TT_CLASS:
+  case MRB_TT_SCLASS:
   case MRB_TT_MODULE:
     break;
   default:
@@ -747,7 +748,7 @@ mrb_include_module(mrb_state *mrb, struct RClass *c, struct RClass *m)
       if (c != p && p->tt == MRB_TT_CLASS) {
         superclass_seen = 1;
       }
-      else if (p->mt == m->mt){
+      else if (p->mt == m->mt) {
         if (p->tt == MRB_TT_ICLASS && !superclass_seen) {
           ins_pos = p;
         }
@@ -1245,21 +1246,31 @@ mrb_class_path(mrb_state *mrb, struct RClass *c)
 {
   mrb_value path;
   const char *name;
-  mrb_int len;
   mrb_sym classpath = mrb_intern_lit(mrb, "__classpath__");
 
   path = mrb_obj_iv_get(mrb, (struct RObject*)c, classpath);
   if (mrb_nil_p(path)) {
     struct RClass *outer = mrb_class_outer_module(mrb, c);
     mrb_sym sym = mrb_class_sym(mrb, c, outer);
+    mrb_int len;
+
     if (sym == 0) {
       return mrb_nil_value();
     }
     else if (outer && outer != mrb->object_class) {
       mrb_value base = mrb_class_path(mrb, outer);
-      path = mrb_str_plus(mrb, base, mrb_str_new_lit(mrb, "::"));
+      path = mrb_str_buf_new(mrb, 0);
+      if (mrb_nil_p(base)) {
+        mrb_str_cat_lit(mrb, path, "#<Class:");
+        mrb_str_concat(mrb, path, mrb_ptr_to_str(mrb, outer));
+        mrb_str_cat_lit(mrb, path, ">");
+      }
+      else {
+        mrb_str_concat(mrb, path, base);
+      }
+      mrb_str_cat_lit(mrb, path, "::");
       name = mrb_sym2name_len(mrb, sym, &len);
-      mrb_str_concat(mrb, path, mrb_str_new(mrb, name, len));
+      mrb_str_cat(mrb, path, name, len);
     }
     else {
       name = mrb_sym2name_len(mrb, sym, &len);
@@ -1332,7 +1343,7 @@ mrb_class_new(mrb_state *mrb, struct RClass *super)
     mrb_check_inheritable(mrb, super);
   }
   c = boot_defclass(mrb, super);
-  if (super){
+  if (super) {
     MRB_SET_INSTANCE_TT(c, MRB_INSTANCE_TT(super));
   }
   make_metaclass(mrb, c);
@@ -1698,7 +1709,7 @@ mrb_mod_remove_cvar(mrb_state *mrb, mrb_value mod)
   val = mrb_iv_remove(mrb, mod, id);
   if (!mrb_undef_p(val)) return val;
 
-  if (mrb_cv_defined(mrb, mod, id)){
+  if (mrb_cv_defined(mrb, mod, id)) {
     mrb_name_error(mrb, id, "cannot remove %S for %S",
                    mrb_sym2str(mrb, id), mod);
   }
