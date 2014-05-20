@@ -295,7 +295,7 @@ end
 
 assert('Exception 17') do
 r=begin
-    raise "a"  # StandardError
+    raise "a"  # RuntimeError
   rescue ArgumentError
     1
   rescue StandardError
@@ -365,13 +365,21 @@ assert('Exception#backtrace') do
 end
 
 assert('Raise in ensure') do
-
-  assert_raise(RuntimeError) do
+  assert_raise(ArgumentError) do
     begin
-      raise ""
+      raise "" # RuntimeError
     ensure
-      raise ""
+      raise ArgumentError
     end
   end
+end
 
+assert('Raise in rescue') do
+  assert_raise(ArgumentError) do
+    begin
+      raise "" # RuntimeError
+    rescue
+      raise ArgumentError
+    end
+  end
 end
