@@ -203,7 +203,7 @@ mrbgems << Mrbgem.new2("iij/mruby-simple-random")
 mrbgems << Mrbgem.new2("iij/mruby-socket", 'iij/mruby-io')
 mrbgems << Mrbgem.new("mruby-syslog", 'git@github.com:iij/mruby-syslog.git',
                       'iij/mruby-io')
-mrbgems << Mrbgem.new2("iij/mruby-tempfile", 'iij/mruby-io', 'iij/mruby-env')
+mrbgems << Mrbgem.new2("iij/mruby-tempfile", 'iij/mruby-dir', 'iij/mruby-io', 'iij/mruby-env')
 
 if $opts[:base]
   base.delete_if { |m| m.name != $opts[:base] }
