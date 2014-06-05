@@ -2309,6 +2309,8 @@ mrb_str_upcase(mrb_state *mrb, mrb_value self)
   return str;
 }
 
+#define IS_EVSTR(p,e) ((p) < (e) && (*(p) == '$' || *(p) == '@' || *(p) == '{'))
+
 /*
  *  call-seq:
  *     str.dump   -> new_str
