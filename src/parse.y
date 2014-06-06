@@ -42,11 +42,7 @@ static void yywarning(parser_state *p, const char *s);
 static void backref_error(parser_state *p, node *n);
 static void tokadd(parser_state *p, int32_t c);
 
-#ifndef isascii
-#define isascii(c) (((c) & ~0x7f) == 0)
-#endif
-
-#define identchar(c) (isalnum(c) || (c) == '_' || !isascii(c))
+#define identchar(c) (ISALNUM(c) || (c) == '_' || !ISASCII(c))
 
 typedef unsigned int stack_type;
 
@@ -3393,7 +3389,7 @@ nextc(parser_state *p)
   else {
     if (p->cxt->partial_hook(p) < 0)
       return -1;
-    return -2;
+    return '\n';
   }
 }
 
@@ -3781,7 +3777,6 @@ read_escape(parser_state *p)
 
     eof:
   case -1:
-  case -2:
     yyerror(p, "Invalid escape character syntax");
     return '\0';
 
@@ -3911,7 +3906,8 @@ parse_string(parser_state *p)
               return tHD_LITERAL_DELIM;
             }
           }
-        } while (ISSPACE(c = nextc(p)));
+          c = nextc(p);
+        } while (ISSPACE(c));
         pushback(p, c);
         return tLITERAL_DELIM;
       }
@@ -4096,7 +4092,6 @@ parser_yylex(parser_state *p)
   case '#':     /* it's a comment */
     skip(p, '\n');
     /* fall through */
-  case -2:      /* end of partial script. */
   case '\n':
     maybe_heredoc:
     heredoc_treat_nextline(p);
@@ -4131,7 +4126,6 @@ parser_yylex(parser_state *p)
         goto retry;
       }
     case -1:                  /* EOF */
-    case -2:                  /* end of partial script */
       goto normal_newline;
     default:
       pushback(p, c);
@@ -4205,14 +4199,14 @@ parser_yylex(parser_state *p)
       static const char end[] = "\n=end";
       if (peeks(p, begin)) {
         c = peekc_n(p, sizeof(begin)-1);
-        if (c < 0 || isspace(c)) {
+        if (c < 0 || ISSPACE(c)) {
           do {
             if (!skips(p, end)) {
               yyerror(p, "embedded document meets end of file");
               return 0;
             }
             c = nextc(p);
-          } while (!(c < 0 || isspace(c)));
+          } while (!(c < 0 || ISSPACE(c)));
           if (c != '\n') skip(p, '\n');
           p->lineno++;
           p->column = 0;
@@ -4337,7 +4331,7 @@ parser_yylex(parser_state *p)
       yyerror(p, "incomplete character syntax");
       return 0;
     }
-    if (isspace(c)) {
+    if (ISSPACE(c)) {
       if (!IS_ARG()) {
         int c2;
         switch (c) {
@@ -5190,7 +5184,7 @@ parser_yylex(parser_state *p)
             pushback(p, c);
           }
         }
-        if (result == 0 && isupper((int)(unsigned char)tok(p)[0])) {
+        if (result == 0 && ISUPPER(tok(p)[0])) {
           result = tCONSTANT;
         }
         else {
@@ -5453,7 +5447,7 @@ mrb_parser_set_filename(struct mrb_parser_state *p, const char *f)
 
   sym = mrb_intern_cstr(p->mrb, f);
   p->filename = mrb_sym2name_len(p->mrb, sym, NULL);
-  p->lineno = (p->filename_table_length > 0)? 0 : 1;
+  p->lineno = (p->filename_table_length > 0)? -1 : 1;
 
   for (i = 0; i < p->filename_table_length; ++i) {
     if (p->filename_table[i] == sym) {
