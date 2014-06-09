@@ -49,22 +49,19 @@ module MRuby
 
       def setup
         MRuby::Gem.current = self
-        @build.compilers.each do |compiler|
-          compiler.include_paths << "#{dir}/include"
-        end if File.directory? "#{dir}/include"
         MRuby::Build::COMMANDS.each do |command|
           instance_variable_set("@#{command}", @build.send(command).clone)
         end
         @linker = LinkerConfig.new([], [], [], [])
 
         @rbfiles = Dir.glob("#{dir}/mrblib/*.rb").sort
-        @objs = Dir.glob("#{dir}/src/*.{c,cpp,cxx,cc,m,asm,S}").map do |f|
+        @objs = Dir.glob("#{dir}/src/*.{c,cpp,cxx,cc,m,asm,s,S}").map do |f|
           objfile(f.relative_path_from(@dir).to_s.pathmap("#{build_dir}/%X"))
         end
         @objs << objfile("#{build_dir}/gem_init")
 
         @test_rbfiles = Dir.glob("#{dir}/test/*.rb")
-        @test_objs = Dir.glob("#{dir}/test/*.{c,cpp,cxx,cc,m,asm,S}").map do |f|
+        @test_objs = Dir.glob("#{dir}/test/*.{c,cpp,cxx,cc,m,asm,s,S}").map do |f|
           objfile(f.relative_path_from(dir).to_s.pathmap("#{build_dir}/%X"))
         end
         @test_preload = nil # 'test/assert.rb'
@@ -88,6 +85,7 @@ module MRuby
         compilers.each do |compiler|
           compiler.define_rules build_dir, "#{dir}"
           compiler.defines << %Q[MRBGEM_#{funcname.upcase}_VERSION=#{version}]
+          compiler.include_paths << "#{dir}/include" if File.directory? "#{dir}/include"
         end
 
         define_gem_init_builder
