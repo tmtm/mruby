@@ -204,7 +204,7 @@ parse_args(mrb_state *mrb, int argc, char **argv, struct _args *args)
     switch (*item++) {
     case 'v':
       if (!args->verbose) mrb_show_version(mrb);
-      args->verbose = 1;
+      args->verbose = TRUE;
       break;
     case '-':
       if (strcmp((*argv) + 2, "version") == 0) {
@@ -212,7 +212,7 @@ parse_args(mrb_state *mrb, int argc, char **argv, struct _args *args)
         exit(EXIT_SUCCESS);
       }
       else if (strcmp((*argv) + 2, "verbose") == 0) {
-        args->verbose = 1;
+        args->verbose = TRUE;
         break;
       }
       else if (strcmp((*argv) + 2, "copyright") == 0) {
@@ -318,10 +318,10 @@ main(int argc, char **argv)
   print_hint();
 
   cxt = mrbc_context_new(mrb);
-  cxt->capture_errors = 1;
+  cxt->capture_errors = TRUE;
   cxt->lineno = 1;
   mrbc_filename(mrb, cxt, "(mirb)");
-  if (args.verbose) cxt->dump_result = 1;
+  if (args.verbose) cxt->dump_result = TRUE;
 
   MIRB_BIN= mrb_str_new(mrb, argv[0], strlen(argv[0]));
   mrb_define_global_const(mrb, "MIRB_BIN", MIRB_BIN);
