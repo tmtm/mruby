@@ -122,6 +122,7 @@ enum mrb_vtype {
 #define mrb_string_p(o) (mrb_type(o) == MRB_TT_STRING)
 #define mrb_hash_p(o) (mrb_type(o) == MRB_TT_HASH)
 #define mrb_cptr_p(o) (mrb_type(o) == MRB_TT_CPTR)
+#define mrb_exception_p(o) (mrb_type(o) == MRB_TT_EXCEPTION)
 #define mrb_test(o)   mrb_bool(o)
 mrb_bool mrb_regexp_p(struct mrb_state*, mrb_value);
 
@@ -129,6 +130,7 @@ static inline mrb_value
 mrb_float_value(struct mrb_state *mrb, mrb_float f)
 {
   mrb_value v;
+  (void) mrb;
   SET_FLOAT_VALUE(mrb, v, f);
   return v;
 }
@@ -137,6 +139,7 @@ static inline mrb_value
 mrb_cptr_value(struct mrb_state *mrb, void *p)
 {
   mrb_value v;
+  (void) mrb;
   SET_CPTR_VALUE(mrb,v,p);
   return v;
 }
