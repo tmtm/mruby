@@ -162,12 +162,6 @@ assert('String#oct') do
   assert_equal (-8), "-10".oct
 end
 
-assert('String#%') do
-  assert_equal "00123", ("%05d" % 123)
-  assert_equal "ID   : 0000007b",  ("%-5s: %08x" % [ "ID", 123 ])
-  assert_equal "foo = bar", ("foo = %{foo}" % { :foo => 'bar' })
-end
-
 assert('String#chr') do
   assert_equal "a", "abcde".chr
 end
