@@ -337,12 +337,11 @@ static mrb_value
 flo_mod(mrb_state *mrb, mrb_value x)
 {
   mrb_value y;
-  mrb_float fy, mod;
+  mrb_float mod;
 
   mrb_get_args(mrb, "o", &y);
 
-  fy = mrb_to_flo(mrb, y);
-  flodivmod(mrb, mrb_float(x), fy, 0, &mod);
+  flodivmod(mrb, mrb_float(x), mrb_to_flo(mrb, y), 0, &mod);
   return mrb_float_value(mrb, mod);
 }
 
@@ -603,12 +602,12 @@ flo_round(mrb_state *mrb, mrb_value num)
 
     /* home-made inline implementation of round(3) */
     if (number > 0.0) {
-        d = floor(number);
-        number = d + (number - d >= 0.5);
+      d = floor(number);
+      number = d + (number - d >= 0.5);
     }
     else if (number < 0.0) {
-        d = ceil(number);
-        number = d - (d - number >= 0.5);
+      d = ceil(number);
+      number = d - (d - number >= 0.5);
     }
 
     if (ndigits < 0) number *= f;
@@ -1072,8 +1071,8 @@ mrb_flo_to_fixnum(mrb_state *mrb, mrb_value x)
   mrb_int z;
 
   if (!mrb_float_p(x)) {
-     mrb_raise(mrb, E_TYPE_ERROR, "non float value");
-     z = 0; /* not reached. just suppress warnings. */
+    mrb_raise(mrb, E_TYPE_ERROR, "non float value");
+    z = 0; /* not reached. just suppress warnings. */
   }
   else {
     mrb_float d = mrb_float(x);
