@@ -168,7 +168,7 @@ str_new(mrb_state *mrb, const char *p, size_t len)
   return s;
 }
 
-static void
+static inline void
 str_with_class(mrb_state *mrb, struct RString *s, mrb_value obj)
 {
   s->c = mrb_str_ptr(obj)->c;
