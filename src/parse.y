@@ -240,7 +240,7 @@ local_unnest(parser_state *p)
   p->locals = p->locals->cdr;
 }
 
-static int
+static mrb_bool
 local_var_p(parser_state *p, mrb_sym sym)
 {
   node *l = p->locals;
@@ -248,12 +248,12 @@ local_var_p(parser_state *p, mrb_sym sym)
   while (l) {
     node *n = l->car;
     while (n) {
-      if (sym(n->car) == sym) return 1;
+      if (sym(n->car) == sym) return TRUE;
       n = n->cdr;
     }
     l = l->cdr;
   }
-  return 0;
+  return FALSE;
 }
 
 static void
@@ -3838,7 +3838,7 @@ parse_string(parser_state *p)
   newtok(p);
   while ((c = nextc(p)) != end || nest_level != 0) {
     if (hinf && (c == '\n' || c < 0)) {
-      int line_head;
+      mrb_bool line_head;
       tokadd(p, '\n');
       tokfix(p);
       p->lineno++;
