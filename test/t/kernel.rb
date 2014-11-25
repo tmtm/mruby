@@ -587,3 +587,4 @@ assert('stack extend') do
 
   assert_equal 6, recurse(0, 5)
 end
+
