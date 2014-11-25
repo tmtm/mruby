@@ -519,24 +519,3 @@ assert('BS Block 38') do
 
   assert_equal [1,2,3,4,5], iter{|a,b,c=:c,d,e| [a,b,c,d,e]}
 end
-
-assert("Issue #1579") do
-  # https://github.com/mruby/mruby/issues/1579
-
-  class Issue1579
-    def self.test
-      @a = nil
-      begin
-        raise 'a'
-      ensure
-        @a = self
-      end
-    end
-
-    def self.a
-      @a
-    end
-  end
-  Issue1579.test rescue nil
-  assert_equal Issue1579, Issue1579.a
-end
