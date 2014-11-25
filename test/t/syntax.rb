@@ -204,22 +204,6 @@ assert('Return values of case statements') do
   assert_equal 1, fb.call
 end
 
-# regression test for #1459
-assert('implicit return and multiple value assignment') do
-  def test_issue_1459
-    x = [ 1, 2 ]
-    if true
-      a, b = [ 1, 2 ]
-      a
-    else
-      c, d = x
-      c
-    end
-  end
-
-  assert_equal 1, test_issue_1459, 'mruby/mruby#1459'
-end
-
 assert('splat in case statement') do
   values = [3,5,1,7,8]
   testa = [1,2,7]
