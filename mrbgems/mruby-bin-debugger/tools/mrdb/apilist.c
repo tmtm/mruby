@@ -75,6 +75,7 @@ dirname(mrb_state *mrb, const char *path)
 
   if ((dir = mrb_malloc(mrb, len + 1)) != NULL) {
     strncpy(dir, path, len);
+    dir[len] = '\0';
   }
   return dir;
 }
@@ -105,7 +106,8 @@ source_file_new(mrb_state *mrb, mrb_debug_context *dbg, char *filename)
 static mrb_bool
 remove_newlines(char *s, FILE *fp)
 {
-  char c, *p;
+  int c;
+  char *p;
   size_t len;
 
   if ((len = strlen(s)) == 0) {
@@ -120,7 +122,7 @@ remove_newlines(char *s, FILE *fp)
 
   if (*p == '\r') {
     /* peek the next character and skip '\n' */
-    if ((unsigned char)(c = fgetc(fp)) != '\n') {
+    if ((c = fgetc(fp)) != '\n') {
       ungetc(c, fp);
     }
   }
@@ -196,6 +198,9 @@ mrb_debug_get_source(mrb_state *mrb, mrdb_state *mrdb, const char *srcpath, cons
     fclose(fp);
     break;
   }
+
+  mrb_free(mrb, (void *)search_path[1]);
+
   return path;
 }
 

@@ -1003,7 +1003,6 @@ gen_vmassignment(codegen_scope *s, node *tree, int rhs, int val)
       genop(s, MKOP_AB(OP_MOVE, cursp(), rhs));
       push();
     }
-    pop();
     genop(s, MKOP_ABC(OP_APOST, cursp(), n, post));
     n = 1;
     if (t->car) {               /* rest */
@@ -1018,7 +1017,7 @@ gen_vmassignment(codegen_scope *s, node *tree, int rhs, int val)
       }
     }
   }
-  else if (val) {
+  if (!val) {
     pop();
   }
 }
@@ -3021,7 +3020,7 @@ codedump(mrb_state *mrb, mrb_irep *irep)
       break;
     case OP_APOST:
       printf("OP_APOST\tR%d\t%d\t%d", GETARG_A(c), GETARG_B(c), GETARG_C(c));
-      print_lv(mrb, irep, c, RAB);
+      print_lv(mrb, irep, c, RA);
       break;
     case OP_STRING:
       {
