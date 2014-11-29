@@ -1,0 +1,24 @@
+MRuby::GemBox.new do |conf|
+  conf.gem :core => "mruby-sprintf"
+  conf.gem :core => "mruby-print"
+
+  Dir.glob("#{root}/mrbgems/mruby-*/mrbgem.rake") do |x|
+    g = File.basename File.dirname x
+    conf.gem :core => g unless g =~ /^mruby-(print|sprintf|bin-debugger|string-utf8)$/
+  end
+
+  # Use IIJ modules
+  conf.gem :git => 'https://github.com/iij/mruby-dir.git'
+  conf.gem :git => 'https://github.com/iij/mruby-errno.git'
+  conf.gem :git => 'https://github.com/iij/mruby-io.git'
+  conf.gem :git => 'https://github.com/iij/mruby-pack.git'
+  conf.gem :git => 'https://github.com/iij/mruby-process.git'
+  conf.gem :git => 'https://github.com/iij/mruby-require.git'
+  conf.gem :git => 'https://github.com/iij/mruby-socket.git'
+  conf.gem :git => 'https://github.com/iij/mruby-tempfile.git'
+
+  # other modules
+  conf.gem :git => 'https://github.com/mattn/mruby-onig-regexp.git'
+  conf.gem :git => 'https://github.com/ksss/mruby-file-stat.git'
+  conf.gem :git => 'https://github.com/gromnitsky/mruby-dir-glob.git'
+end
