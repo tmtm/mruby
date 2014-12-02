@@ -184,7 +184,7 @@ mrbgems = []
 mrbgems << Mrbgem.new("mruby-digest", 'git@github.com:iij/mruby-digest.git')
 mrbgems << Mrbgem.new("mruby-dir", 'git@github.com:iij/mruby-dir.git')
 mrbgems << Mrbgem.new("mruby-env", 'git@github.com:iij/mruby-env.git',
-                     'iij/mruby-mtest', 'iij/mruby-regexp-pcre')
+                     'iij/mruby-io', 'iij/mruby-mtest', 'iij/mruby-regexp-pcre')
 mrbgems << Mrbgem.new("mruby-errno", 'git@github.com:iij/mruby-errno.git')
 mrbgems << Mrbgem.new("mruby-mdebug", 'git@github.com:iij/mruby-mdebug.git')
 mrbgems << Mrbgem.new2("iij/mruby-mock")
