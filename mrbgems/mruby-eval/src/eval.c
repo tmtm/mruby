@@ -28,7 +28,7 @@ get_closure_irep(mrb_state *mrb, int level)
   if (!e) return NULL;
   proc = c->cibase[e->cioff].proc;
 
-  if (MRB_PROC_CFUNC_P(proc)) {
+  if (!proc || MRB_PROC_CFUNC_P(proc)) {
     return NULL;
   }
   return proc->body.irep;
@@ -55,18 +55,13 @@ search_variable(mrb_state *mrb, mrb_sym vsym, int bnest)
   return 0;
 }
 
-static int
-potential_upvar_p(struct mrb_locals *lv, uint16_t v, uint16_t nlocals)
+static mrb_bool
+potential_upvar_p(struct mrb_locals *lv, uint16_t v, int argc, uint16_t nlocals)
 {
-  int i;
-
+  if (v >= nlocals) return FALSE;
   /* skip arguments  */
-  for (i=0; i<nlocals; i++) {
-    if (lv[i].name == 0)
-      break;
-  }
-  if (i == nlocals) return v < nlocals;
-  return i < v && v < nlocals;
+  if (v < argc+1) return FALSE;
+  return TRUE;
 }
 
 static void
@@ -74,10 +69,19 @@ patch_irep(mrb_state *mrb, mrb_irep *irep, int bnest)
 {
   size_t i;
   mrb_code c;
+  int argc = 0;
 
   for (i = 0; i < irep->ilen; i++) {
     c = irep->iseq[i];
     switch(GET_OPCODE(c)){
+    case OP_ENTER:
+      {
+        mrb_aspec ax = GETARG_Ax(i);
+        /* extra 1 means a slot for block */
+        argc = MRB_ASPEC_REQ(ax)+MRB_ASPEC_OPT(ax)+MRB_ASPEC_REST(ax)+MRB_ASPEC_POST(ax)+1;
+      }
+      break;
+
     case OP_EPUSH:
       patch_irep(mrb, irep->reps[GETARG_Bx(c)], bnest + 1);
       break;
@@ -106,7 +110,7 @@ patch_irep(mrb_state *mrb, mrb_irep *irep, int bnest)
 
     case OP_MOVE:
       /* src part */
-      if (potential_upvar_p(irep->lv, GETARG_B(c), irep->nlocals)) {
+      if (potential_upvar_p(irep->lv, GETARG_B(c), argc, irep->nlocals)) {
         mrb_code arg = search_variable(mrb, irep->lv[GETARG_B(c) - 1].name, bnest);
         if (arg != 0) {
           /* must replace */
@@ -114,7 +118,7 @@ patch_irep(mrb_state *mrb, mrb_irep *irep, int bnest)
         }
       }
       /* dst part */
-      if (potential_upvar_p(irep->lv, GETARG_A(c), irep->nlocals)) {
+      if (potential_upvar_p(irep->lv, GETARG_A(c), argc, irep->nlocals)) {
         mrb_code arg = search_variable(mrb, irep->lv[GETARG_A(c) - 1].name, bnest);
         if (arg != 0) {
           /* must replace */
@@ -125,8 +129,6 @@ patch_irep(mrb_state *mrb, mrb_irep *irep, int bnest)
     }
   }
 }
-
-void mrb_codedump_all(mrb_state *mrb, struct RProc *proc);
 
 static struct RProc*
 create_proc_from_string(mrb_state *mrb, char *s, int len, mrb_value binding, char *file, mrb_int line)

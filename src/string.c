@@ -164,7 +164,7 @@ str_new(mrb_state *mrb, const char *p, size_t len)
 {
   struct RString *s;
 
-  if (mrb_ro_data_p(p)) {
+  if (p && mrb_ro_data_p(p)) {
     return str_new_static(mrb, p, len);
   }
   s = mrb_obj_alloc_string(mrb);
@@ -752,9 +752,6 @@ mrb_str_aref(mrb_state *mrb, mrb_value str, mrb_value indx)
 
   mrb_regexp_check(mrb, indx);
   switch (mrb_type(indx)) {
-    case MRB_TT_FLOAT:
-      indx = mrb_flo_to_fixnum(mrb, indx);
-      /* fall through */
     case MRB_TT_FIXNUM:
       idx = mrb_fixnum(indx);
 
@@ -781,7 +778,12 @@ num_index:
           return mrb_nil_value();
         }
       }
+    case MRB_TT_FLOAT:
     default:
+      indx = mrb_Integer(mrb, indx);
+      if (mrb_nil_p(indx)) {
+        mrb_raise(mrb, E_TYPE_ERROR, "can't convert to Fixnum");
+      }
       idx = mrb_fixnum(indx);
       goto num_index;
   }
